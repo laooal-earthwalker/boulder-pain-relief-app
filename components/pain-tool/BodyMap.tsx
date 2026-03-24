@@ -45,8 +45,8 @@ export function spotColor(intensity: number): string {
 
 export function spotRadius(size: SpotSize): number {
   if (size === "pinpoint") return 5;
-  if (size === "regional") return 12;
-  return 19;
+  if (size === "regional") return 13;
+  return 21;
 }
 
 // ── Region data (local 0–140 x, 0–410 y, center x=70) ────────────────────────
@@ -307,10 +307,10 @@ export const REGION_LABELS: Record<string, string> = Object.fromEntries(
   [...FRONT_REGIONS, ...BACK_REGIONS].map((r) => [r.id, r.label])
 );
 
-// ── Body silhouette path (local 0–140, center x=70) ──────────────────────────
-// Single continuous clockwise path: top of head → right side → feet → left side → close
+// ── Body silhouette paths ─────────────────────────────────────────────────────
+// Improved anatomy with pronounced waist taper and distinct back contour.
 
-const BODY_PATH = `
+const FRONT_BODY_PATH = `
   M 70,2
   C 93,2 95,28 87,50
   C 83,58 79,66 79,68
@@ -324,22 +324,22 @@ const BODY_PATH = `
   C 123,182 125,166 125,146
   C 127,128 127,110 121,96
   C 119,88 111,80 99,80
-  C 103,88 105,108 107,130
-  C 109,150 107,168 103,182
-  C 101,192 101,204 105,216
-  C 107,228 107,240 103,252
-  C 103,274 103,296 101,320
-  C 101,336 99,350 99,374
-  C 99,386 103,396 99,402
-  C 89,406 79,406 70,406
-  C 61,406 51,406 41,402
-  C 37,396 41,386 41,374
-  C 41,350 39,336 39,320
-  C 37,296 37,274 37,252
-  C 33,240 33,228 35,216
-  C 39,204 39,192 37,182
-  C 33,168 31,150 33,130
-  C 35,108 37,88 41,80
+  C 102,88 104,108 106,130
+  C 106,150 100,168 96,182
+  C 96,192 100,206 106,218
+  C 108,228 108,240 106,256
+  C 105,274 105,296 103,320
+  C 103,336 101,350 101,374
+  C 101,386 105,396 101,402
+  C 91,406 81,406 70,406
+  C 59,406 49,406 39,402
+  C 35,396 39,386 39,374
+  C 39,350 37,336 37,320
+  C 35,296 35,274 34,256
+  C 32,240 32,228 34,218
+  C 40,206 44,192 44,182
+  C 40,168 38,150 36,130
+  C 36,110 38,88 40,80
   C 29,80 21,88 19,96
   C 13,110 13,128 13,146
   C 13,166 15,182 17,198
@@ -354,119 +354,354 @@ const BODY_PATH = `
   C 45,28 47,2 70,2 Z
 `;
 
+// Back view: same general structure with gluteal bulge at hips
+const BACK_BODY_PATH = `
+  M 70,2
+  C 93,2 95,28 87,50
+  C 83,58 79,66 79,68
+  C 87,66 107,64 125,74
+  C 137,80 137,98 131,114
+  C 127,128 121,146 119,162
+  C 117,176 115,192 113,208
+  C 111,218 111,228 113,234
+  C 115,240 119,238 121,232
+  C 123,224 123,210 123,198
+  C 125,182 127,166 127,146
+  C 129,128 129,110 123,96
+  C 121,88 113,80 101,80
+  C 104,88 106,108 108,130
+  C 108,150 102,168 98,182
+  C 100,192 108,210 112,224
+  C 114,234 112,246 108,258
+  C 106,276 105,296 103,320
+  C 103,336 101,350 101,374
+  C 101,386 105,396 101,402
+  C 91,406 81,406 70,406
+  C 59,406 49,406 39,402
+  C 35,396 39,386 39,374
+  C 39,350 37,336 37,320
+  C 35,296 34,276 32,258
+  C 28,246 26,234 28,224
+  C 32,210 40,192 42,182
+  C 38,168 34,150 34,130
+  C 36,110 36,88 38,80
+  C 27,80 19,88 17,96
+  C 11,110 11,128 11,146
+  C 11,166 13,182 15,198
+  C 15,210 15,224 17,232
+  C 19,238 23,240 25,234
+  C 27,228 27,218 25,208
+  C 23,192 21,176 19,162
+  C 17,146 13,128 9,114
+  C 3,100 3,80 17,74
+  C 33,64 53,64 61,68
+  C 61,66 57,58 53,50
+  C 45,28 47,2 70,2 Z
+`;
+
 // ── SVG sub-components ────────────────────────────────────────────────────────
 
 function SharedDefs() {
   return (
     <defs>
-      <radialGradient id="bm-grad-body" cx="48%" cy="36%" r="60%">
-        <stop offset="0%" stopColor="#ffffff" />
-        <stop offset="50%" stopColor="#f4f4f2" />
-        <stop offset="100%" stopColor="#c8c8c4" />
+      {/* Front figure — very light teal-white, lit from upper-left */}
+      <radialGradient id="bm-grad-body" cx="40%" cy="28%" r="68%">
+        <stop offset="0%" stopColor="#f8fffe" />
+        <stop offset="55%" stopColor="#e8f8f6" />
+        <stop offset="100%" stopColor="#b8dbd9" />
       </radialGradient>
-      <radialGradient id="bm-grad-body-back" cx="52%" cy="38%" r="60%">
-        <stop offset="0%" stopColor="#ffffff" />
-        <stop offset="50%" stopColor="#f2f2f0" />
-        <stop offset="100%" stopColor="#c4c4c0" />
+      {/* Back figure — slightly cooler / less lit */}
+      <radialGradient id="bm-grad-body-back" cx="56%" cy="30%" r="68%">
+        <stop offset="0%" stopColor="#f4fdfc" />
+        <stop offset="55%" stopColor="#daf1ef" />
+        <stop offset="100%" stopColor="#a8cece" />
       </radialGradient>
-      <filter id="bm-blur-diffuse" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur stdDeviation="3.5" />
+      {/* Diffuse spot blur */}
+      <filter id="bm-blur-diffuse" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="4" />
       </filter>
-      <filter id="bm-shadow" x="-20%" y="-10%" width="140%" height="130%">
-        <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#00000020" />
+      {/* Subtle drop shadow under figure */}
+      <filter id="bm-shadow" x="-15%" y="-8%" width="130%" height="122%">
+        <feDropShadow dx="0" dy="2" stdDeviation="3.5" floodColor="#0f766e" floodOpacity="0.12" />
       </filter>
     </defs>
   );
 }
 
 function FrontMuscleLines() {
-  const s = { stroke: "#60605c", strokeWidth: 0.65, fill: "none", strokeLinecap: "round" as const };
+  // Primary muscle boundaries
+  const p = {
+    stroke: "#0f766e",
+    strokeWidth: 0.7,
+    fill: "none",
+    strokeLinecap: "round" as const,
+    opacity: 0.55,
+  };
+  // Secondary / fine detail
+  const s = {
+    stroke: "#0d9488",
+    strokeWidth: 0.5,
+    fill: "none",
+    strokeLinecap: "round" as const,
+    opacity: 0.38,
+  };
   return (
-    <g opacity={0.75}>
-      {/* Clavicles */}
-      <path d="M71,72 C64,70 56,70 52,74" {...s} />
-      <path d="M69,72 C76,70 84,70 88,74" {...s} />
-      {/* Pec borders */}
-      <path d="M53,80 C56,94 62,110 70,122" {...s} strokeWidth={0.6} />
-      <path d="M87,80 C84,94 78,110 70,122" {...s} strokeWidth={0.6} />
-      {/* Pec lower border */}
-      <path d="M62,128 C66,132 70,133 70,133 C70,133 74,132 78,128" {...s} strokeWidth={0.6} />
-      {/* Sternum midline */}
-      <line x1="70" y1="74" x2="70" y2="182" stroke="#60605c" strokeWidth={0.5} strokeDasharray="2,2.5" />
-      {/* Abs — 2 transverse lines */}
-      <path d="M59,142 C64,140 70,140 70,140 C70,140 76,140 81,142" {...s} strokeWidth={0.6} />
-      <path d="M57,158 C63,156 70,156 70,156 C70,156 77,156 83,158" {...s} strokeWidth={0.6} />
-      {/* Obliques */}
-      <path d="M51,136 C48,148 48,160 51,174" {...s} strokeWidth={0.5} />
-      <path d="M89,136 C92,148 92,160 89,174" {...s} strokeWidth={0.5} />
-      {/* Bicep line — left */}
-      <path d="M20,110 C18,126 18,144 20,158" {...s} strokeWidth={0.6} />
-      {/* Bicep line — right */}
-      <path d="M120,110 C122,126 122,144 120,158" {...s} strokeWidth={0.6} />
-      {/* Forearm tendon — left */}
-      <path d="M16,176 C16,192 18,208 20,220" {...s} strokeWidth={0.5} />
-      {/* Forearm tendon — right */}
-      <path d="M124,176 C124,192 122,208 120,220" {...s} strokeWidth={0.5} />
-      {/* Quad definition left */}
-      <path d="M52,242 C50,264 50,288 52,308" {...s} strokeWidth={0.6} />
-      {/* Quad definition right */}
-      <path d="M88,242 C90,264 90,288 88,308" {...s} strokeWidth={0.6} />
-      {/* Kneecap left */}
-      <path d="M30,322 C36,318 48,318 54,322" {...s} strokeWidth={0.75} />
+    <g>
+      {/* ── Neck ── */}
+      {/* SCM right — from mastoid to sternum */}
+      <path d="M76,28 C76,40 74,54 72,70" {...s} />
+      {/* SCM left */}
+      <path d="M64,28 C64,40 66,54 68,70" {...s} />
+
+      {/* ── Clavicles ── */}
+      <path d="M71,71 C66,70 58,70 52,74" {...p} />
+      <path d="M69,71 C74,70 82,70 88,74" {...p} />
+
+      {/* ── Deltoid borders ── */}
+      {/* Right anterior delt curve */}
+      <path d="M88,74 C96,78 106,82 112,92" {...p} />
+      {/* Left anterior delt */}
+      <path d="M52,74 C44,78 34,82 28,92" {...p} />
+      {/* Right deltoid inferior border */}
+      <path d="M112,92 C114,100 114,110 112,118" {...s} />
+      {/* Left deltoid inferior border */}
+      <path d="M28,92 C26,100 26,110 28,118" {...s} />
+
+      {/* ── Pectoralis major ── */}
+      {/* Right pec border (vertical) */}
+      <path d="M88,74 C84,88 80,108 80,128" {...p} strokeWidth={0.65} />
+      {/* Left pec border */}
+      <path d="M52,74 C56,88 60,108 60,128" {...p} strokeWidth={0.65} />
+      {/* Pec inferior border right */}
+      <path d="M80,128 C84,134 88,136 92,134" {...s} />
+      {/* Pec inferior border left */}
+      <path d="M60,128 C56,134 52,136 48,134" {...s} />
+
+      {/* ── Sternum / linea alba ── */}
+      <line x1="70" y1="71" x2="70" y2="196"
+        stroke="#0f766e" strokeWidth={0.5} strokeDasharray="2.5,2.5" opacity={0.4} />
+
+      {/* ── Abdominals ── */}
+      {/* Serratus anterior — right */}
+      <path d="M91,130 C94,136 94,144 92,152" {...s} />
+      {/* Serratus — left */}
+      <path d="M49,130 C46,136 46,144 48,152" {...s} />
+      {/* Transverse inscription 1 */}
+      <path d="M62,143 C66,141 70,141 70,141 C70,141 74,141 78,143" {...p} strokeWidth={0.6} />
+      {/* Transverse inscription 2 */}
+      <path d="M60,158 C65,156 70,156 70,156 C70,156 75,156 80,158" {...p} strokeWidth={0.6} />
+      {/* Obliques right */}
+      <path d="M88,136 C92,150 92,166 88,180" {...s} />
+      {/* Obliques left */}
+      <path d="M52,136 C48,150 48,166 52,180" {...s} />
+      {/* Inguinal ligament right */}
+      <path d="M96,180 C100,190 104,200 104,212" {...s} />
+      {/* Inguinal ligament left */}
+      <path d="M44,180 C40,190 36,200 36,212" {...s} />
+
+      {/* ── Arms — right ── */}
+      {/* Biceps length line */}
+      <path d="M118,100 C118,116 118,138 120,158" {...p} strokeWidth={0.65} />
+      {/* Biceps medial border */}
+      <path d="M112,102 C112,120 114,142 116,162" {...s} />
+      {/* Brachioradialis right */}
+      <path d="M120,162 C122,176 122,194 120,210" {...p} strokeWidth={0.6} />
+      {/* Forearm extensor group right */}
+      <path d="M124,164 C126,180 126,198 124,212" {...s} />
+      {/* Wrist tendon right */}
+      <path d="M118,212 C118,220 118,226 120,232" {...s} />
+
+      {/* ── Arms — left ── */}
+      <path d="M22,100 C22,116 22,138 20,158" {...p} strokeWidth={0.65} />
+      <path d="M28,102 C28,120 26,142 24,162" {...s} />
+      <path d="M20,162 C18,176 18,194 20,210" {...p} strokeWidth={0.6} />
+      <path d="M16,164 C14,180 14,198 16,212" {...s} />
+      <path d="M22,212 C22,220 22,226 20,232" {...s} />
+
+      {/* ── Hip / TFL ── */}
+      {/* Right TFL */}
+      <path d="M104,204 C106,214 106,224 104,232" {...s} />
+      {/* Left TFL */}
+      <path d="M36,204 C34,214 34,224 36,232" {...s} />
+
+      {/* ── Quads (right leg) ── */}
+      {/* Rectus femoris / center quad */}
+      <path d="M94,244 C92,264 92,288 92,308" {...p} strokeWidth={0.65} />
+      {/* Vastus lateralis (outer) */}
+      <path d="M104,242 C106,264 106,290 104,312" {...s} />
+      {/* Vastus medialis (inner) — slight diagonal */}
+      <path d="M84,244 C80,266 78,288 78,308" {...s} />
+      {/* VMO teardrop at medial knee */}
+      <path d="M78,308 C74,316 76,322 82,322" {...s} strokeWidth={0.6} />
       {/* Kneecap right */}
-      <path d="M86,322 C92,318 104,318 110,322" {...s} strokeWidth={0.75} />
-      {/* Tibial line left */}
-      <line x1="48" y1="326" x2="46" y2="380" stroke="#60605c" strokeWidth={0.5} />
-      {/* Tibial line right */}
-      <line x1="92" y1="326" x2="94" y2="380" stroke="#60605c" strokeWidth={0.5} />
-      {/* Calf belly left */}
-      <path d="M34,338 C32,354 34,370 38,380" {...s} strokeWidth={0.6} />
-      {/* Calf belly right */}
-      <path d="M106,338 C108,354 106,370 102,380" {...s} strokeWidth={0.6} />
+      <path d="M84,320 C90,316 100,316 106,320" {...p} strokeWidth={0.8} />
+      {/* IT band right */}
+      <path d="M108,244 C110,268 110,294 108,318" {...s} />
+
+      {/* ── Quads (left leg) ── */}
+      <path d="M46,244 C48,264 48,288 48,308" {...p} strokeWidth={0.65} />
+      <path d="M36,242 C34,264 34,290 36,312" {...s} />
+      <path d="M56,244 C60,266 62,288 62,308" {...s} />
+      <path d="M62,308 C66,316 64,322 58,322" {...s} strokeWidth={0.6} />
+      <path d="M56,320 C50,316 40,316 34,320" {...p} strokeWidth={0.8} />
+      <path d="M32,244 C30,268 30,294 32,318" {...s} />
+
+      {/* ── Shins / lower leg ── */}
+      {/* Tibialis anterior right */}
+      <path d="M92,330 C92,350 90,368 90,384" {...p} strokeWidth={0.6} />
+      {/* Peroneal right */}
+      <path d="M104,330 C104,350 102,370 100,386" {...s} />
+      {/* Calf belly (visible from front) right */}
+      <path d="M108,340 C110,356 108,372 106,384" {...s} />
+      {/* Tibialis anterior left */}
+      <path d="M48,330 C48,350 50,368 50,384" {...p} strokeWidth={0.6} />
+      <path d="M36,330 C36,350 38,370 40,386" {...s} />
+      <path d="M32,340 C30,356 32,372 34,384" {...s} />
+
+      {/* ── Ankle / foot ── */}
+      {/* Extensor tendons right */}
+      <path d="M92,388 C94,396 96,402 100,404" {...s} />
+      {/* Extensor tendons left */}
+      <path d="M48,388 C46,396 44,402 40,404" {...s} />
     </g>
   );
 }
 
 function BackMuscleLines() {
-  const s = { stroke: "#60605c", strokeWidth: 0.65, fill: "none", strokeLinecap: "round" as const };
+  const p = {
+    stroke: "#0f766e",
+    strokeWidth: 0.7,
+    fill: "none",
+    strokeLinecap: "round" as const,
+    opacity: 0.55,
+  };
+  const s = {
+    stroke: "#0d9488",
+    strokeWidth: 0.5,
+    fill: "none",
+    strokeLinecap: "round" as const,
+    opacity: 0.38,
+  };
   return (
-    <g opacity={0.75}>
-      {/* Trapezius upper — left */}
-      <path d="M71,74 C66,80 58,86 52,90" {...s} />
-      {/* Trapezius upper — right */}
-      <path d="M69,74 C74,80 82,86 88,90" {...s} />
-      {/* Scapula spine left */}
-      <path d="M52,90 C55,98 58,112 58,128" {...s} strokeWidth={0.6} />
-      {/* Scapula spine right */}
-      <path d="M88,90 C85,98 82,112 82,128" {...s} strokeWidth={0.6} />
-      {/* Rhomboid / medial border left */}
-      <path d="M71,80 C68,96 66,116 66,132" {...s} strokeWidth={0.5} />
-      {/* Rhomboid / medial border right */}
-      <path d="M69,80 C72,96 74,116 74,132" {...s} strokeWidth={0.5} />
-      {/* Spine / erector */}
-      <line x1="70" y1="74" x2="70" y2="204" stroke="#60605c" strokeWidth={0.55} strokeDasharray="2,2.5" />
-      {/* Lat border left */}
-      <path d="M51,88 C47,108 47,134 51,158" {...s} strokeWidth={0.6} />
-      {/* Lat border right */}
-      <path d="M89,88 C93,108 93,134 89,158" {...s} strokeWidth={0.6} />
-      {/* Glute crease */}
-      <path d="M55,268 C62,274 70,276 70,276 C70,276 78,274 85,268" {...s} strokeWidth={0.8} />
-      {/* Glute med left */}
-      <path d="M44,210 C40,222 40,238 44,252" {...s} strokeWidth={0.6} />
+    <g>
+      {/* ── Neck / upper trap ── */}
+      {/* Upper trap right — from neck to acromion */}
+      <path d="M74,56 C76,64 82,72 90,80" {...p} />
+      {/* Upper trap left */}
+      <path d="M66,56 C64,64 58,72 50,80" {...p} />
+      {/* Cervical erector / semispinalis right */}
+      <path d="M73,56 C73,62 73,66 73,70" {...s} />
+      <path d="M67,56 C67,62 67,66 67,70" {...s} />
+
+      {/* ── Scapula / upper back ── */}
+      {/* Spine of scapula right */}
+      <path d="M70,88 C76,90 82,90 88,88" {...p} strokeWidth={0.65} />
+      {/* Spine of scapula left */}
+      <path d="M70,88 C64,90 58,90 52,88" {...p} strokeWidth={0.65} />
+      {/* Medial border scapula right */}
+      <path d="M66,86 C65,100 65,116 66,132" {...p} strokeWidth={0.65} />
+      {/* Medial border scapula left */}
+      <path d="M74,86 C75,100 75,116 74,132" {...p} strokeWidth={0.65} />
+      {/* Inferior angle scapula right */}
+      <path d="M66,132 C70,136 76,136 78,132" {...s} />
+      {/* Infraspinatus right */}
+      <path d="M66,98 C68,108 70,118 70,128" {...s} />
+      <path d="M70,98 C72,108 74,118 74,128" {...s} />
+      {/* Teres major right — runs from axilla to lat */}
+      <path d="M88,106 C94,118 96,130 92,144" {...s} />
+      {/* Teres major left */}
+      <path d="M52,106 C46,118 44,130 48,144" {...s} />
+
+      {/* ── Middle & lower trapezius ── */}
+      {/* Mid trap horizontal fibers right */}
+      <path d="M66,105 C72,104 78,103 86,102" {...s} />
+      <path d="M66,114 C72,113 78,112 86,110" {...s} />
+      {/* Lower trap — angled down to spine T12 */}
+      <path d="M86,106 C82,120 78,134 72,148" {...s} />
+      <path d="M54,106 C58,120 62,134 68,148" {...s} />
+
+      {/* ── Latissimus dorsi ── */}
+      {/* Lat outer border right */}
+      <path d="M88,104 C92,124 92,146 88,164" {...p} strokeWidth={0.7} />
+      {/* Lat outer border left */}
+      <path d="M52,104 C48,124 48,146 52,164" {...p} strokeWidth={0.7} />
+
+      {/* ── Spine / erector spinae ── */}
+      {/* Erector right column */}
+      <path d="M74,74 C74,110 74,150 74,200"
+        stroke="#0f766e" strokeWidth={0.55} strokeDasharray="2,2.5" opacity={0.45} fill="none" />
+      {/* Erector left column */}
+      <path d="M66,74 C66,110 66,150 66,200"
+        stroke="#0f766e" strokeWidth={0.55} strokeDasharray="2,2.5" opacity={0.45} fill="none" />
+      {/* Thoracolumbar fascia — diamond boundary */}
+      <path d="M70,140 C78,154 80,170 70,186 C60,170 60,154 70,140" {...s} strokeWidth={0.55} />
+
+      {/* ── Posterior deltoid / triceps ── */}
+      {/* Posterior delt right */}
+      <path d="M106,84 C112,92 116,104 114,116" {...p} strokeWidth={0.6} />
+      {/* Posterior delt left */}
+      <path d="M34,84 C28,92 24,104 26,116" {...p} strokeWidth={0.6} />
+      {/* Triceps long head right */}
+      <path d="M116,108 C118,128 118,150 118,164" {...p} strokeWidth={0.65} />
+      {/* Triceps long head left */}
+      <path d="M24,108 C22,128 22,150 22,164" {...p} strokeWidth={0.65} />
+      {/* Triceps lateral head right */}
+      <path d="M122,110 C124,130 124,152 122,166" {...s} />
+      {/* Triceps lateral head left */}
+      <path d="M18,110 C16,130 16,152 18,166" {...s} />
+      {/* Forearm extensors right */}
+      <path d="M118,168 C120,184 120,202 118,216" {...s} />
+      {/* Forearm extensors left */}
+      <path d="M22,168 C20,184 20,202 22,216" {...s} />
+
+      {/* ── Iliac crest ── */}
+      <path d="M38,192 C48,186 60,184 70,184 C80,184 92,186 102,192" {...p} strokeWidth={0.7} />
+
+      {/* ── Gluteus medius ── */}
       {/* Glute med right */}
-      <path d="M96,210 C100,222 100,238 96,252" {...s} strokeWidth={0.6} />
-      {/* Bicep femoris left */}
-      <path d="M52,280 C50,306 50,330 52,350" {...s} strokeWidth={0.6} />
-      {/* Bicep femoris right */}
-      <path d="M88,280 C90,306 90,330 88,350" {...s} strokeWidth={0.6} />
-      {/* Tricep line left */}
-      <path d="M20,108 C22,128 22,148 20,164" {...s} strokeWidth={0.6} />
-      {/* Tricep line right */}
-      <path d="M120,108 C118,128 118,148 120,164" {...s} strokeWidth={0.6} />
-      {/* Calf heads left */}
-      <path d="M36,370 C38,382 42,390 46,396" {...s} strokeWidth={0.6} />
-      {/* Calf heads right */}
-      <path d="M104,370 C102,382 98,390 94,396" {...s} strokeWidth={0.6} />
+      <path d="M102,192 C110,198 114,210 112,224" {...p} strokeWidth={0.7} />
+      {/* Glute med left */}
+      <path d="M38,192 C30,198 26,210 28,224" {...p} strokeWidth={0.7} />
+
+      {/* ── Gluteus maximus ── */}
+      {/* Glute crease (inferior fold) */}
+      <path d="M36,264 C44,272 56,276 70,276 C84,276 96,272 104,264" {...p} strokeWidth={0.85} />
+      {/* Glute max lateral border right */}
+      <path d="M104,222 C108,238 106,252 104,262" {...s} />
+      {/* Glute max lateral border left */}
+      <path d="M36,222 C32,238 34,252 36,262" {...s} />
+
+      {/* ── Hamstrings ── */}
+      {/* Hamstring midline split right — biceps femoris / semi group */}
+      <path d="M90,282 C90,304 90,328 90,350" {...p} strokeWidth={0.65} />
+      {/* Hamstring midline left */}
+      <path d="M50,282 C50,304 50,328 50,350" {...p} strokeWidth={0.65} />
+      {/* Outer hamstring border right */}
+      <path d="M102,280 C104,302 104,328 102,350" {...s} />
+      {/* Outer hamstring border left */}
+      <path d="M38,280 C36,302 36,328 38,350" {...s} />
+      {/* Popliteal fossa diamond */}
+      <path d="M76,352 C82,356 90,356 94,352 C90,362 82,364 76,360 C72,356 72,354 76,352" {...s} strokeWidth={0.5} />
+      <path d="M64,352 C58,356 50,356 46,352 C50,362 58,364 64,360 C68,356 68,354 64,352" {...s} strokeWidth={0.5} />
+
+      {/* ── Calf / gastrocnemius ── */}
+      {/* Medial head right */}
+      <path d="M88,362 C88,374 86,386 84,396" {...p} strokeWidth={0.65} />
+      {/* Lateral head right */}
+      <path d="M100,362 C100,374 100,386 98,396" {...p} strokeWidth={0.65} />
+      {/* Gastro ridge right */}
+      <path d="M94,358 C94,370 94,382 92,396" {...s} />
+      {/* Medial head left */}
+      <path d="M52,362 C52,374 54,386 56,396" {...p} strokeWidth={0.65} />
+      {/* Lateral head left */}
+      <path d="M40,362 C40,374 40,386 42,396" {...p} strokeWidth={0.65} />
+      <path d="M46,358 C46,370 46,382 48,396" {...s} />
+
+      {/* ── Achilles ── */}
+      {/* Achilles right */}
+      <path d="M92,394 C92,398 94,402 94,406" {...p} strokeWidth={0.75} />
+      {/* Achilles left */}
+      <path d="M48,394 C48,398 46,402 46,406" {...p} strokeWidth={0.75} />
     </g>
   );
 }
@@ -518,13 +753,14 @@ export default function BodyMap({
           d={region.clipPath}
           fill={
             isActive
-              ? `${spotColor(existingSpot!.intensity)}30`
+              ? `${spotColor(existingSpot!.intensity)}28`
               : isHovered
-              ? `${spotColor(intensity)}18`
+              ? `${spotColor(intensity)}14`
               : "transparent"
           }
-          stroke={isActive ? spotColor(existingSpot!.intensity) : "transparent"}
-          strokeWidth={isActive ? 1.2 : 0}
+          stroke={isActive ? spotColor(existingSpot!.intensity) : isHovered ? spotColor(intensity) : "transparent"}
+          strokeWidth={isActive ? 1.2 : isHovered ? 0.8 : 0}
+          strokeOpacity={isActive ? 1 : 0.5}
           style={{ cursor: "pointer" }}
           onClick={() =>
             onToggle(
@@ -545,6 +781,46 @@ export default function BodyMap({
     });
   }
 
+  // Hover preview — shows how the spot will look before placing
+  function renderHoverPreview(regions: Region[], view: "front" | "back") {
+    if (!hovered || hoveredView !== view) return null;
+    const reg = regions.find((r) => r.id === hovered);
+    if (!reg) return null;
+    const hasSpot = painSpots.some(
+      (s) => s.regionId === reg.id && s.view === view
+    );
+    if (hasSpot) return null;
+
+    const r = spotRadius(currentSize);
+    const color = spotColor(intensity);
+    const isDiffuse = currentSize === "diffuse";
+
+    return (
+      <g pointerEvents="none" opacity={0.5}>
+        {isDiffuse && (
+          <circle
+            cx={reg.dotCenter.x}
+            cy={reg.dotCenter.y}
+            r={r + 7}
+            fill={color}
+            opacity={0.18}
+            filter="url(#bm-blur-diffuse)"
+          />
+        )}
+        <circle
+          cx={reg.dotCenter.x}
+          cy={reg.dotCenter.y}
+          r={r}
+          fill={color}
+          opacity={isDiffuse ? 0.55 : 0.7}
+          stroke="white"
+          strokeWidth={1.5}
+          filter={isDiffuse ? "url(#bm-blur-diffuse)" : undefined}
+        />
+      </g>
+    );
+  }
+
   function renderSpots(view: "front" | "back") {
     return painSpots
       .filter((s) => s.view === view)
@@ -560,29 +836,26 @@ export default function BodyMap({
               onToggle(spot.regionId, spot.label, spot.cx, spot.cy, view)
             }
           >
-            {/* Outer glow for diffuse */}
             {isDiffuse && (
               <circle
                 cx={spot.cx}
                 cy={spot.cy}
-                r={r + 6}
+                r={r + 8}
                 fill={color}
-                opacity={0.2}
+                opacity={0.18}
                 filter="url(#bm-blur-diffuse)"
               />
             )}
-            {/* Main dot */}
             <circle
               cx={spot.cx}
               cy={spot.cy}
               r={r}
               fill={color}
-              opacity={isDiffuse ? 0.75 : 0.92}
+              opacity={isDiffuse ? 0.72 : 0.92}
               stroke="white"
-              strokeWidth={1.5}
+              strokeWidth={1.8}
               filter={isDiffuse ? "url(#bm-blur-diffuse)" : undefined}
             />
-            {/* Intensity label (regional + diffuse only) */}
             {spot.size !== "pinpoint" && (
               <text
                 x={spot.cx}
@@ -607,7 +880,6 @@ export default function BodyMap({
     const regions = hoveredView === "front" ? FRONT_REGIONS : BACK_REGIONS;
     const reg = regions.find((r) => r.id === hovered);
     if (reg) {
-      // tx/ty in absolute SVG coords (accounting for figure group offsets)
       const offsetX = hoveredView === "front" ? 10 : 160;
       const labelW = reg.label.length * 5.5 + 14;
       const tx = Math.max(
@@ -617,22 +889,19 @@ export default function BodyMap({
       const ty =
         reg.dotCenter.y > 200
           ? reg.dotCenter.y - 22
-          : reg.dotCenter.y + 24;
+          : reg.dotCenter.y + 26;
       tooltip = { label: reg.label, tx, ty };
     }
   }
-
-  const gradFront = "url(#bm-grad-body)";
-  const gradBack = "url(#bm-grad-body-back)";
 
   return (
     <div className="flex flex-col items-center gap-4">
       {/* Hint */}
       <p className="text-center text-xs text-slate-400">
-        Tap any region to mark pain &mdash; front and back views shown
+        Tap any region to mark pain &mdash; anterior and posterior views shown
       </p>
 
-      {/* Body map SVG — fills parent, scales on all screen sizes */}
+      {/* Body map SVG */}
       <div className="w-full">
         <svg
           viewBox="0 0 300 432"
@@ -645,32 +914,26 @@ export default function BodyMap({
 
           {/* ── ANTERIOR (front) figure ─────────────────────── */}
           <g transform="translate(10, 0)" filter="url(#bm-shadow)">
-            {/* Silhouette fill */}
-            <path d={BODY_PATH} fill={gradFront} />
-            {/* Muscle lines */}
+            <path d={FRONT_BODY_PATH} fill="url(#bm-grad-body)" />
             <FrontMuscleLines />
-            {/* Silhouette stroke on top */}
             <path
-              d={BODY_PATH}
+              d={FRONT_BODY_PATH}
               fill="none"
-              stroke="#222220"
-              strokeWidth={1.4}
+              stroke="#134e4a"
+              strokeWidth={1.5}
               strokeLinejoin="round"
             />
-            {/* Region overlays */}
             {renderRegions(FRONT_REGIONS, "front")}
-            {/* Pain dots */}
+            {renderHoverPreview(FRONT_REGIONS, "front")}
             {renderSpots("front")}
-            {/* Label */}
             <text
               x="70"
-              y="424"
+              y="425"
               textAnchor="middle"
-              fontSize={8}
+              fontSize={7.5}
               fontWeight="600"
-              fill="#94a3b8"
-              letterSpacing="1.5"
-              style={{ textTransform: "uppercase" } as React.CSSProperties}
+              fill="#5eead4"
+              letterSpacing="1.8"
             >
               ANTERIOR
             </text>
@@ -678,25 +941,26 @@ export default function BodyMap({
 
           {/* ── POSTERIOR (back) figure ─────────────────────── */}
           <g transform="translate(160, 0)" filter="url(#bm-shadow)">
-            <path d={BODY_PATH} fill={gradBack} />
+            <path d={BACK_BODY_PATH} fill="url(#bm-grad-body-back)" />
             <BackMuscleLines />
             <path
-              d={BODY_PATH}
+              d={BACK_BODY_PATH}
               fill="none"
-              stroke="#222220"
-              strokeWidth={1.4}
+              stroke="#134e4a"
+              strokeWidth={1.5}
               strokeLinejoin="round"
             />
             {renderRegions(BACK_REGIONS, "back")}
+            {renderHoverPreview(BACK_REGIONS, "back")}
             {renderSpots("back")}
             <text
               x="70"
-              y="424"
+              y="425"
               textAnchor="middle"
-              fontSize={8}
+              fontSize={7.5}
               fontWeight="600"
-              fill="#94a3b8"
-              letterSpacing="1.5"
+              fill="#5eead4"
+              letterSpacing="1.8"
             >
               POSTERIOR
             </text>
@@ -705,12 +969,12 @@ export default function BodyMap({
           {/* Divider */}
           <line
             x1="150"
-            y1="10"
+            y1="8"
             x2="150"
-            y2="410"
-            stroke="#e2e8f0"
+            y2="412"
+            stroke="#ccfbf1"
             strokeWidth={1}
-            strokeDasharray="4,4"
+            strokeDasharray="4,5"
           />
 
           {/* Tooltip */}
@@ -724,8 +988,8 @@ export default function BodyMap({
                   width={w}
                   height={18}
                   rx={5}
-                  fill="#0f172a"
-                  opacity={0.88}
+                  fill="#0f4c3a"
+                  opacity={0.9}
                 />
                 <text
                   x={tooltip.tx}

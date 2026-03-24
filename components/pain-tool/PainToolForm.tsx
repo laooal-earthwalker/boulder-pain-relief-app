@@ -407,46 +407,84 @@ export default function PainToolForm() {
               </div>
 
               {/* Size selector */}
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs text-slate-500">Spot type:</span>
-                {(
-                  [
-                    { size: "pinpoint" as SpotSize, label: "Pinpoint", r: 4 },
-                    { size: "regional" as SpotSize, label: "Regional", r: 7 },
-                    { size: "diffuse" as SpotSize, label: "Diffuse", r: 10 },
-                  ] as { size: SpotSize; label: string; r: number }[]
-                ).map(({ size, label, r }) => {
-                  const active = currentSize === size;
-                  const color = spotColor(form.intensity);
-                  return (
-                    <button
-                      key={size}
-                      type="button"
-                      onClick={() => setCurrentSize(size)}
-                      className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                        active
-                          ? "border-teal-500 bg-teal-50 text-teal-700"
-                          : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
-                      }`}
-                    >
-                      <svg
-                        width={r * 2 + 2}
-                        height={r * 2 + 2}
-                        viewBox={`0 0 ${r * 2 + 2} ${r * 2 + 2}`}
-                        aria-hidden
+              <div className="rounded-xl border border-slate-200 bg-white p-3">
+                <p className="mb-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Pain spread — select before tapping the map
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(
+                    [
+                      {
+                        size: "pinpoint" as SpotSize,
+                        label: "Pinpoint",
+                        desc: "Sharp, localized",
+                        r: 4,
+                      },
+                      {
+                        size: "regional" as SpotSize,
+                        label: "Regional",
+                        desc: "Moderate spread",
+                        r: 7,
+                      },
+                      {
+                        size: "diffuse" as SpotSize,
+                        label: "Diffuse",
+                        desc: "Broad aching area",
+                        r: 10,
+                      },
+                    ] as { size: SpotSize; label: string; desc: string; r: number }[]
+                  ).map(({ size, label, desc, r }) => {
+                    const active = currentSize === size;
+                    const color = spotColor(form.intensity);
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => setCurrentSize(size)}
+                        className={`flex flex-col items-center gap-1.5 rounded-xl border py-3 px-2 text-center transition ${
+                          active
+                            ? "border-teal-400 bg-teal-50 ring-1 ring-teal-400/40"
+                            : "border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white"
+                        }`}
                       >
-                        <circle
-                          cx={r + 1}
-                          cy={r + 1}
-                          r={r}
-                          fill={active ? color : "#94a3b8"}
-                          opacity={size === "diffuse" ? 0.7 : 0.9}
-                        />
-                      </svg>
-                      {label}
-                    </button>
-                  );
-                })}
+                        <svg
+                          width={r * 2 + 4}
+                          height={r * 2 + 4}
+                          viewBox={`0 0 ${r * 2 + 4} ${r * 2 + 4}`}
+                          aria-hidden
+                          className="mt-0.5"
+                        >
+                          {size === "diffuse" && (
+                            <circle
+                              cx={r + 2}
+                              cy={r + 2}
+                              r={r + 2}
+                              fill={active ? color : "#94a3b8"}
+                              opacity={0.18}
+                            />
+                          )}
+                          <circle
+                            cx={r + 2}
+                            cy={r + 2}
+                            r={r}
+                            fill={active ? color : "#94a3b8"}
+                            opacity={size === "diffuse" ? 0.65 : 0.88}
+                          />
+                        </svg>
+                        <span
+                          className={`text-xs font-semibold leading-none ${
+                            active ? "text-teal-700" : "text-slate-600"
+                          }`}
+                        >
+                          {label}
+                        </span>
+                        <span className="text-[10px] leading-tight text-slate-400">
+                          {desc}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Body map */}
