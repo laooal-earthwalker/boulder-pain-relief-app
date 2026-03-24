@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Boulder Pain Relief Massage | Clinical Massage Therapy in Boulder, CO",
   description:
-    "Evidence-based clinical massage therapy for desk workers, athletes, and the CrossFit community in Boulder, CO. Book a session or try the AI pain tool.",
+    "Evidence-based clinical massage therapy for desk workers, athletes, and the CrossFit community in Boulder, CO. Book a session or try PainMap — our free AI assessment tool.",
 };
 
 // Acuity Scheduling — replace with actual URL before launch
@@ -63,10 +63,10 @@ function HeroSection() {
             <ArrowRightIcon className="h-4 w-4" />
           </a>
           <Link
-            href="/pain-tool"
+            href="/painmap"
             className="inline-flex items-center gap-2 rounded-full border border-teal-400/40 bg-teal-800/40 px-8 py-3.5 text-base font-semibold text-white backdrop-blur-sm transition hover:bg-teal-700/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
-            Try the AI Pain Tool
+            Try PainMap Free
           </Link>
         </div>
 
@@ -239,9 +239,9 @@ function ToolsSection() {
 
         {/* Cards grid */}
         <div className="grid gap-6 sm:grid-cols-2">
-          {/* AI Pain Tool */}
+          {/* PainMap */}
           <Link
-            href="/pain-tool"
+            href="/painmap"
             className="group flex flex-col gap-4 rounded-2xl border border-teal-200 bg-teal-50 p-7 transition hover:border-teal-300 hover:shadow-md"
           >
             <div className="flex items-start justify-between">
@@ -254,7 +254,7 @@ function ToolsSection() {
             </div>
             <div className="flex flex-col gap-1.5">
               <h3 className="text-base font-semibold text-slate-900">
-                AI Pain Tool
+                PainMap
               </h3>
               <p className="text-sm leading-6 text-slate-600">
                 Describe your symptoms, location, and activities. Get a
@@ -377,8 +377,8 @@ function CtaBanner() {
           Ready to feel better?
         </h2>
         <p className="max-w-md text-base text-teal-100/70">
-          Book a session online or start with the free AI pain tool to get
-          personalized guidance before your first visit.
+          Book a session online or start with PainMap — our free AI assessment
+          tool — to get personalized guidance before your first visit.
         </p>
         <div className="flex flex-col items-center gap-4 sm:flex-row">
           <a
@@ -391,10 +391,10 @@ function CtaBanner() {
             <ArrowRightIcon className="h-4 w-4" />
           </a>
           <Link
-            href="/pain-tool"
+            href="/painmap"
             className="inline-flex items-center gap-2 rounded-full border border-teal-400/40 bg-teal-800/40 px-8 py-3.5 text-base font-semibold text-white backdrop-blur-sm transition hover:bg-teal-700/60"
           >
-            Try the AI Pain Tool
+            Try PainMap Free
           </Link>
         </div>
       </div>

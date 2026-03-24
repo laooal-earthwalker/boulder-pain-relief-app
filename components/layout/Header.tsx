@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 
 const navLinks = [
   { href: "/about", label: "About" },
-  { href: "/pain-tool", label: "Pain Tool" },
+  { href: "/painmap", label: "PainMap" },
   { href: "/resources", label: "Resources" },
   { href: "/courses", label: "Courses" },
   { href: "/shop", label: "Shop" },

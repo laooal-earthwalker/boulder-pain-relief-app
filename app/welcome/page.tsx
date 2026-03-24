@@ -85,21 +85,19 @@ export default function WelcomePage() {
         <div className="w-full max-w-lg">
           {/* Label */}
           <p className="mb-3 text-center text-xs font-semibold uppercase tracking-widest text-teal-600">
-            Clinical Pain Mapping Tool
+            Boulder Pain Relief
           </p>
 
           {/* Headline */}
           <h1 className="mb-4 text-center text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-            Help your practitioner
-            <br className="hidden sm:block" />
-            {" "}understand your pain
+            Meet PainMap
           </h1>
 
           {/* Subheadline */}
           <p className="mb-10 text-center text-base leading-relaxed text-slate-500 sm:mb-12">
-            Before your session, map where you hurt, describe what triggered it,
-            and get a structured clinical summary — ready for your therapist when
-            you arrive.
+            Before your session, use PainMap to mark where you hurt, describe
+            what triggered it, and get a structured clinical summary — ready for
+            your therapist when you arrive.
           </p>
 
           {/* 3-step cards */}
@@ -146,10 +144,10 @@ export default function WelcomePage() {
               </svg>
             </Link>
             <Link
-              href="/pain-tool"
+              href="/painmap"
               className="flex items-center justify-center gap-2 rounded-full border border-slate-200 py-3.5 text-sm font-medium text-slate-600 transition hover:border-teal-200 hover:text-teal-700"
             >
-              Try it without an account
+              Try PainMap without an account
             </Link>
             <p className="text-center text-sm text-slate-500">
               Already have an account?{" "}
