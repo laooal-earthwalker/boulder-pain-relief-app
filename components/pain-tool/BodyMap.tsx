@@ -632,11 +632,12 @@ export default function BodyMap({
         Tap any region to mark pain &mdash; front and back views shown
       </p>
 
-      {/* Body map SVG */}
-      <div className="w-full max-w-[340px]">
+      {/* Body map SVG — fills parent, scales on all screen sizes */}
+      <div className="w-full">
         <svg
           viewBox="0 0 300 432"
           className="w-full"
+          style={{ touchAction: "manipulation" }}
           role="group"
           aria-label="Body map — anterior and posterior views. Tap a region to mark pain."
         >

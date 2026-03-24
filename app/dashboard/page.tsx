@@ -57,15 +57,54 @@ export default async function DashboardPage() {
         {reports && reports.length > 0 ? (
           <PainHistory reports={reports} submittedMap={submittedMap} />
         ) : (
-          <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-            <p className="text-sm text-slate-500">No sessions recorded yet.</p>
-            <p className="mt-1 text-xs text-slate-400">
-              Use the{" "}
-              <Link href="/pain-tool" className="text-teal-600 hover:underline">
-                Pain Tool
-              </Link>{" "}
-              and save your results to start tracking.
-            </p>
+          <div className="flex flex-col items-center gap-6 rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm sm:p-14">
+            {/* Body map icon */}
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-teal-50">
+              <svg
+                className="h-8 w-8 text-teal-500"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M12 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" />
+                <path d="M6.5 8.5C5 9.5 4 11 4 13c0 2 .5 4 1.5 5.5" />
+                <path d="M17.5 8.5C19 9.5 20 11 20 13c0 2-.5 4-1.5 5.5" />
+                <path d="M8 8.5v5L7 19h10l-1-5.5V8.5" />
+              </svg>
+            </div>
+
+            <div>
+              <p className="text-base font-semibold text-slate-900">
+                No pain history yet
+              </p>
+              <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
+                Start by mapping where you feel pain today. After you get your
+                clinical assessment, save the session — it will appear here.
+              </p>
+            </div>
+
+            <Link
+              href="/pain-tool"
+              className="inline-flex items-center gap-2 rounded-full bg-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700"
+            >
+              Start pain assessment
+              <svg
+                className="h-4 w-4"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </Link>
           </div>
         )}
       </div>
