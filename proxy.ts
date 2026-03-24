@@ -41,34 +41,37 @@ export async function proxy(request: NextRequest) {
   }
 
   // ── Session refresh ──────────────────────────────────────────────────────────
+  // Skip entirely if Supabase is not yet configured — keeps all pages functional.
   let supabaseResponse = NextResponse.next({ request });
+  let user = null;
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (supabaseUrl && supabaseKey) {
+    try {
+      const supabase = createServerClient(supabaseUrl, supabaseKey, {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) =>
+              request.cookies.set(name, value)
+            );
+            supabaseResponse = NextResponse.next({ request });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              supabaseResponse.cookies.set(name, value, options)
+            );
+          },
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
+      });
+      // IMPORTANT: getUser() refreshes the session token — do not remove.
+      ({ data: { user } } = await supabase.auth.getUser());
+    } catch {
+      // Supabase unreachable or misconfigured — treat as unauthenticated.
     }
-  );
-
-  // IMPORTANT: getUser() must be called to refresh the session token.
-  // Do not remove this call.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  }
 
   // ── Route protection ─────────────────────────────────────────────────────────
   if (pathname.startsWith("/dashboard") && !user) {
