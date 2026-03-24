@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import type { User } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
 
 const navLinks = [
   { href: "/about", label: "About" },
@@ -14,10 +16,49 @@ const navLinks = [
   { href: "/booking", label: "Booking" },
 ];
 
-const BOOKING_URL = "https://app.acuityscheduling.com/schedule.php?owner=38155939";
+const BOOKING_URL =
+  "https://app.acuityscheduling.com/schedule.php?owner=38155939";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    async function fetchRole(userId: string) {
+      const { data } = await supabase
+        .from("client_profiles")
+        .select("role")
+        .eq("id", userId)
+        .single();
+      setRole(data?.role ?? null);
+    }
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      if (user) fetchRole(user.id);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) fetchRole(session.user.id);
+      else setRole(null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  }
+
+  const isPractitioner = role === "practitioner";
 
   return (
     <header className="sticky top-0 z-50 border-b border-teal-100 bg-white/95 backdrop-blur-sm">
@@ -53,41 +94,64 @@ export default function Header() {
           ))}
         </nav>
 
-        {/* Desktop CTA + mobile hamburger */}
-        <div className="flex items-center gap-3">
+        {/* Desktop right side */}
+        <div className="hidden items-center gap-3 md:flex">
+          {user ? (
+            <>
+              <Link
+                href={isPractitioner ? "/practitioner" : "/dashboard"}
+                className="text-sm font-medium text-slate-600 transition-colors hover:text-teal-700"
+              >
+                {isPractitioner ? "Practitioner" : "My History"}
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="text-sm font-medium text-slate-400 transition-colors hover:text-slate-700"
+              >
+                Log out
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/auth/login"
+              className="text-sm font-medium text-slate-600 transition-colors hover:text-teal-700"
+            >
+              Log in
+            </Link>
+          )}
           <a
             href={BOOKING_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden rounded-full bg-teal-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 sm:block"
+            className="rounded-full bg-teal-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
           >
             Book Now
           </a>
-
-          {/* Hamburger */}
-          <button
-            onClick={() => setOpen(!open)}
-            aria-label="Toggle navigation menu"
-            aria-expanded={open}
-            className="flex flex-col gap-[5px] rounded p-1.5 md:hidden"
-          >
-            <span
-              className={`block h-0.5 w-5 bg-slate-700 transition-transform duration-200 ${
-                open ? "translate-y-[7px] rotate-45" : ""
-              }`}
-            />
-            <span
-              className={`block h-0.5 w-5 bg-slate-700 transition-opacity duration-200 ${
-                open ? "opacity-0" : ""
-              }`}
-            />
-            <span
-              className={`block h-0.5 w-5 bg-slate-700 transition-transform duration-200 ${
-                open ? "-translate-y-[7px] -rotate-45" : ""
-              }`}
-            />
-          </button>
         </div>
+
+        {/* Hamburger */}
+        <button
+          onClick={() => setOpen(!open)}
+          aria-label="Toggle navigation menu"
+          aria-expanded={open}
+          className="flex flex-col gap-[5px] rounded p-1.5 md:hidden"
+        >
+          <span
+            className={`block h-0.5 w-5 bg-slate-700 transition-transform duration-200 ${
+              open ? "translate-y-[7px] rotate-45" : ""
+            }`}
+          />
+          <span
+            className={`block h-0.5 w-5 bg-slate-700 transition-opacity duration-200 ${
+              open ? "opacity-0" : ""
+            }`}
+          />
+          <span
+            className={`block h-0.5 w-5 bg-slate-700 transition-transform duration-200 ${
+              open ? "-translate-y-[7px] -rotate-45" : ""
+            }`}
+          />
+        </button>
       </div>
 
       {/* Mobile menu */}
@@ -104,6 +168,34 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
+            {user ? (
+              <>
+                <Link
+                  href={isPractitioner ? "/practitioner" : "/dashboard"}
+                  onClick={() => setOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-teal-700 transition hover:bg-teal-50"
+                >
+                  {isPractitioner ? "Practitioner Dashboard" : "My History"}
+                </Link>
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    handleLogout();
+                  }}
+                  className="rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-500 transition hover:bg-slate-50"
+                >
+                  Log out
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/auth/login"
+                onClick={() => setOpen(false)}
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-teal-700 transition hover:bg-teal-50"
+              >
+                Log in
+              </Link>
+            )}
           </nav>
           <a
             href={BOOKING_URL}
@@ -119,4 +211,3 @@ export default function Header() {
     </header>
   );
 }
-

@@ -1,131 +1,143 @@
+/**
+ * POST /api/ai/pain-check
+ *
+ * HIPAA requirements enforced here:
+ *  - Auth check before any processing
+ *  - PHI stripped via sanitizeSpotsForAI() before the Claude call
+ *  - Only clinical content (region label, intensity, activity text) sent to Claude
+ *  - No client name, email, or user ID ever sent to the external API
+ *  - Action logged to audit_logs (user ID + action type only, no PHI)
+ *  - No console.log of PHI anywhere in this file
+ */
+
 import { anthropic } from "@/lib/anthropic";
+import { createClient } from "@/lib/supabase/server";
+import { CLINICAL_SYSTEM_PROMPT } from "@/lib/ai/systemPrompt";
+import { sanitizeSpotsForAI, assertNoPHI } from "@/lib/hipaa/sanitize";
+import { logAuditEvent, getClientIp } from "@/lib/hipaa/auditLog";
 
-const SYSTEM_PROMPT = `You are a knowledgeable, caring Licensed Massage Therapist (LMT) at Boulder Pain Relief Massage in Boulder, CO. You specialize in evidence-based clinical massage therapy for desk workers, athletes, and the CrossFit community.
-
-A client is describing their pain or discomfort. Respond as their trusted practitioner — direct, warm, and specific to what they've shared. Never generic.
-
-Structure your response using these exact markdown section headers:
-
-## What May Be Happening
-
-Explain in plain language what is likely occurring in their muscles, fascia, or connective tissue based on their specific symptom picture. Name the tissues involved (and briefly explain them), describe the mechanism, and connect it clearly to their reported activities and duration. Be specific — not "you may have muscle tension" but what kind, where, why.
-
-## Self-Care Recommendations
-
-Give exactly 3 numbered, specific, actionable recommendations they can do today or this week. Each should include: what to do, how to do it, and how often. Reference their specific location and activities. Options include: stretches, mobilizations, self-massage techniques, heat/ice protocols, ergonomic adjustments, loading modifications.
-
-## Should You Book a Session?
-
-Give an honest, direct recommendation. If yes, explain what a session would specifically address that self-care cannot. If not urgent, say so but give a threshold ("if X persists after Y weeks, come in"). Mention that Boulder Pain Relief offers sessions via Acuity Scheduling.
-
----
-
-Guidelines:
-- Use plain language. Explain any anatomy term the first time you use it.
-- Be specific to their reported location, intensity, duration, and activities — do not give generic advice.
-- Do not suggest seeing a doctor unless symptoms suggest something potentially serious (acute trauma, neurological symptoms like numbness/tingling radiating down a limb, or bowel/bladder changes).
-- End with one sentence: "This is educational guidance based on what you've shared, not a medical diagnosis."
-- Keep the total response under 450 words.`;
-
-interface PainCheckRequest {
-  location: string;
-  intensity: number;
-  duration: string;
-  worseWith: string;
-  betterWith: string;
+interface IncomingSpot {
+  label?: string;
+  intensity?: number;
+  activityText?: string;
+  size?: string;
+  [key: string]: unknown;
 }
 
-function buildUserMessage(data: PainCheckRequest): string {
-  return `Here is my situation:
-
-**Pain location:** ${data.location}
-**Intensity:** ${data.intensity}/10
-**How long:** ${data.duration}
-**Makes it worse:** ${data.worseWith || "Nothing specific noted"}
-**Makes it better:** ${data.betterWith || "Nothing specific noted"}
-
-Please give me your assessment.`;
+interface RequestBody {
+  spots: IncomingSpot[];
+  duration?: string;
 }
 
 export async function POST(request: Request) {
-  let body: PainCheckRequest;
+  // ── 1. Auth check — reject immediately if not authenticated ────────────────
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
+  if (!user) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // ── 2. Parse and validate input ────────────────────────────────────────────
+  let body: RequestBody;
   try {
     body = await request.json();
   } catch {
     return Response.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  // Basic validation
-  if (!body.location?.trim()) {
+  if (!Array.isArray(body.spots) || body.spots.length === 0) {
     return Response.json(
-      { error: "Please describe your pain location." },
-      { status: 422 }
-    );
-  }
-  if (
-    typeof body.intensity !== "number" ||
-    body.intensity < 1 ||
-    body.intensity > 10
-  ) {
-    return Response.json(
-      { error: "Intensity must be between 1 and 10." },
-      { status: 422 }
-    );
-  }
-  if (!body.duration) {
-    return Response.json(
-      { error: "Please select how long you've had this pain." },
+      { error: "At least one pain region is required." },
       { status: 422 }
     );
   }
 
-  // Enforce reasonable input lengths to control token usage
-  body.location = body.location.slice(0, 200);
-  body.worseWith = (body.worseWith ?? "").slice(0, 400);
-  body.betterWith = (body.betterWith ?? "").slice(0, 400);
+  if (body.spots.length > 10) {
+    return Response.json(
+      { error: "Maximum 10 pain regions per assessment." },
+      { status: 422 }
+    );
+  }
+
+  // ── 3. Sanitize — strip all PHI before building the Claude payload ─────────
+  const sanitized = sanitizeSpotsForAI(body.spots);
+
+  // Guard: verify no PHI slipped through in activity text
+  try {
+    assertNoPHI(
+      sanitized.map((s) => s.activityText),
+      "activityText"
+    );
+  } catch {
+    // Block the request — PHI detected in free-text field.
+    // Do not log the content itself (that would log PHI).
+    return Response.json(
+      {
+        error:
+          "Your description appears to contain personal contact information. Please describe only the activity and body sensation.",
+      },
+      { status: 422 }
+    );
+  }
 
   if (!process.env.ANTHROPIC_API_KEY) {
+    return Response.json({ error: "API not configured." }, { status: 500 });
+  }
+
+  // ── 4. Build the Claude user message — clinical content only ───────────────
+  const userMessage = sanitized
+    .map(
+      (s) =>
+        `body_region: ${s.label}\nintensity: ${s.intensity}/10\nsize: ${s.size}\nactivity: ${s.activityText || "Not provided"}`
+    )
+    .join("\n\n---\n\n");
+
+  // ── 5. Call Claude — non-streaming (JSON response required) ───────────────
+  let rawContent: string;
+  try {
+    const message = await anthropic.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 1200,
+      system: CLINICAL_SYSTEM_PROMPT,
+      messages: [{ role: "user", content: userMessage }],
+    });
+
+    rawContent =
+      message.content[0]?.type === "text" ? message.content[0].text : "";
+  } catch {
     return Response.json(
-      { error: "API key not configured." },
+      { error: "Assessment service unavailable. Please try again." },
+      { status: 502 }
+    );
+  }
+
+  // ── 6. Parse Claude's JSON response ───────────────────────────────────────
+  let assessment: unknown;
+  try {
+    // Claude may wrap JSON in markdown fences — strip them
+    const cleaned = rawContent
+      .replace(/^```json\s*/i, "")
+      .replace(/^```\s*/i, "")
+      .replace(/```\s*$/i, "")
+      .trim();
+    assessment = JSON.parse(cleaned);
+  } catch {
+    return Response.json(
+      { error: "Assessment parsing failed. Please try again." },
       { status: 500 }
     );
   }
 
-  const encoder = new TextEncoder();
+  // ── 7. Audit log — user ID + action only, no PHI ──────────────────────────
+  const ip = getClientIp(request);
+  await logAuditEvent(user.id, "ai_assessment_requested", ip);
 
-  const readable = new ReadableStream({
-    async start(controller) {
-      try {
-        const stream = anthropic.messages.stream({
-          model: "claude-sonnet-4-6",
-          max_tokens: 700,
-          system: SYSTEM_PROMPT,
-          messages: [{ role: "user", content: buildUserMessage(body) }],
-        });
-
-        for await (const event of stream) {
-          if (
-            event.type === "content_block_delta" &&
-            event.delta.type === "text_delta"
-          ) {
-            controller.enqueue(encoder.encode(event.delta.text));
-          }
-        }
-        controller.close();
-      } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Unexpected error.";
-        controller.enqueue(encoder.encode(`\n\n_Error: ${message}_`));
-        controller.close();
-      }
-    },
-  });
-
-  return new Response(readable, {
+  return Response.json(assessment, {
     headers: {
-      "Content-Type": "text/plain; charset=utf-8",
-      "Cache-Control": "no-cache, no-store",
+      "Cache-Control": "no-store, no-cache",
       "X-Content-Type-Options": "nosniff",
     },
   });
