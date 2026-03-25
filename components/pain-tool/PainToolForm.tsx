@@ -36,7 +36,6 @@ const RISK_STYLES = {
 };
 
 interface FormState {
-  intensity: number;
   duration: string;
   worseWith: string;
   betterWith: string;
@@ -55,26 +54,10 @@ interface AiAssessment {
 }
 
 const INITIAL_FORM: FormState = {
-  intensity: 5,
   duration: "",
   worseWith: "",
   betterWith: "",
 };
-
-function intensityLabel(n: number): string {
-  if (n <= 2) return "Very mild";
-  if (n <= 4) return "Mild";
-  if (n <= 6) return "Moderate";
-  if (n <= 8) return "Significant";
-  return "Severe";
-}
-
-function intensityColor(n: number): string {
-  if (n <= 3) return "#16a34a";
-  if (n <= 5) return "#ca8a04";
-  if (n <= 7) return "#ea580c";
-  return "#dc2626";
-}
 
 // ── Activity slide-up modal ────────────────────────────────────────────────────
 
@@ -200,6 +183,7 @@ export default function PainToolForm() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [painSpots, setPainSpots] = useState<PainSpot[]>([]);
   const [currentSize, setCurrentSize] = useState<SpotSize>("regional");
+  const [currentIntensity, setCurrentIntensity] = useState<number>(3);
   // Per-spot activity text: key = `${regionId}-${view}`
   const [activityTexts, setActivityTexts] = useState<Record<string, string>>({});
 
@@ -279,7 +263,7 @@ export default function PainToolForm() {
         regionId,
         label,
         size: currentSize,
-        intensity: form.intensity,
+        intensity: currentIntensity,
         cx,
         cy,
         view,
@@ -353,7 +337,7 @@ export default function PainToolForm() {
             label: s.label,
             activityText: activityTexts[`${s.regionId}-${s.view}`] ?? "",
           })),
-          overall_intensity: form.intensity,
+          overall_intensity: currentIntensity,
           duration: form.duration,
           worse_with: form.worseWith || null,
           better_with: form.betterWith || null,
@@ -406,36 +390,21 @@ export default function PainToolForm() {
                 </span>
               </div>
 
-              {/* Size selector */}
+              {/* Size + intensity selector */}
               <div className="rounded-xl border border-slate-200 bg-white p-3">
                 <p className="mb-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Pain spread — select before tapping the map
+                  Pain spread &amp; intensity — select before tapping the map
                 </p>
                 <div className="grid grid-cols-3 gap-2">
                   {(
                     [
-                      {
-                        size: "pinpoint" as SpotSize,
-                        label: "Pinpoint",
-                        desc: "Sharp, localized",
-                        r: 4,
-                      },
-                      {
-                        size: "regional" as SpotSize,
-                        label: "Regional",
-                        desc: "Moderate spread",
-                        r: 7,
-                      },
-                      {
-                        size: "diffuse" as SpotSize,
-                        label: "Diffuse",
-                        desc: "Broad aching area",
-                        r: 10,
-                      },
+                      { size: "pinpoint" as SpotSize, label: "Pinpoint", desc: "Sharp, localized", r: 4 },
+                      { size: "regional" as SpotSize, label: "Regional", desc: "Moderate spread",  r: 7 },
+                      { size: "diffuse"  as SpotSize, label: "Diffuse",  desc: "Broad aching area", r: 10 },
                     ] as { size: SpotSize; label: string; desc: string; r: number }[]
                   ).map(({ size, label, desc, r }) => {
                     const active = currentSize === size;
-                    const color = spotColor(form.intensity);
+                    const color = spotColor(currentIntensity);
                     return (
                       <button
                         key={size}
@@ -455,35 +424,44 @@ export default function PainToolForm() {
                           className="mt-0.5"
                         >
                           {size === "diffuse" && (
-                            <circle
-                              cx={r + 2}
-                              cy={r + 2}
-                              r={r + 2}
-                              fill={active ? color : "#94a3b8"}
-                              opacity={0.18}
-                            />
+                            <circle cx={r + 2} cy={r + 2} r={r + 2} fill={active ? color : "#94a3b8"} opacity={0.18} />
                           )}
-                          <circle
-                            cx={r + 2}
-                            cy={r + 2}
-                            r={r}
-                            fill={active ? color : "#94a3b8"}
-                            opacity={size === "diffuse" ? 0.65 : 0.88}
-                          />
+                          <circle cx={r + 2} cy={r + 2} r={r} fill={active ? color : "#94a3b8"} opacity={size === "diffuse" ? 0.65 : 0.88} />
                         </svg>
-                        <span
-                          className={`text-xs font-semibold leading-none ${
-                            active ? "text-teal-700" : "text-slate-600"
-                          }`}
-                        >
+                        <span className={`text-xs font-semibold leading-none ${active ? "text-teal-700" : "text-slate-600"}`}>
                           {label}
                         </span>
-                        <span className="text-[10px] leading-tight text-slate-400">
-                          {desc}
-                        </span>
+                        <span className="text-[10px] leading-tight text-slate-400">{desc}</span>
                       </button>
                     );
                   })}
+                </div>
+
+                {/* Intensity dots — 1 to 5 */}
+                <div className="mt-3 flex items-center justify-between gap-1">
+                  <span className="shrink-0 text-[10px] text-slate-400">Intensity</span>
+                  <div className="flex items-center gap-1.5">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setCurrentIntensity(n)}
+                        title={["Barely noticeable", "Mild", "Moderate", "Significant", "Severe"][n - 1]}
+                        className="flex h-6 w-6 items-center justify-center rounded-full transition focus:outline-none"
+                        style={{
+                          backgroundColor: n <= currentIntensity ? spotColor(n) : "#e2e8f0",
+                          transform: n === currentIntensity ? "scale(1.25)" : "scale(1)",
+                          boxShadow: n === currentIntensity ? `0 0 0 2px white, 0 0 0 3.5px ${spotColor(n)}` : "none",
+                        }}
+                        aria-pressed={n === currentIntensity}
+                      >
+                        <span className="sr-only">{n}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <span className="shrink-0 text-[10px] font-semibold" style={{ color: spotColor(currentIntensity) }}>
+                    {["Barely noticeable", "Mild", "Moderate", "Significant", "Severe"][currentIntensity - 1]}
+                  </span>
                 </div>
               </div>
 
@@ -493,7 +471,7 @@ export default function PainToolForm() {
                   painSpots={painSpots}
                   onToggle={handleToggle}
                   currentSize={currentSize}
-                  intensity={form.intensity}
+                  intensity={currentIntensity}
                 />
               </div>
 
@@ -567,40 +545,6 @@ export default function PainToolForm() {
                 </div>
               </div>
             )}
-
-            {/* ── Intensity slider ─────────────────────────────────────── */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="intensity"
-                  className="text-sm font-semibold text-slate-700"
-                >
-                  Overall pain intensity
-                </label>
-                <span
-                  className="text-sm font-semibold tabular-nums"
-                  style={{ color: intensityColor(form.intensity) }}
-                >
-                  {form.intensity}/10 &mdash; {intensityLabel(form.intensity)}
-                </span>
-              </div>
-              <input
-                id="intensity"
-                type="range"
-                min={1}
-                max={10}
-                step={1}
-                value={form.intensity}
-                onChange={(e) =>
-                  setField("intensity", parseInt(e.target.value, 10))
-                }
-                className="h-2 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-teal-600"
-              />
-              <div className="flex justify-between text-xs text-slate-400">
-                <span>1 – Barely noticeable</span>
-                <span>10 – Worst possible</span>
-              </div>
-            </div>
 
             {/* ── Duration ────────────────────────────────────────────── */}
             <div className="flex flex-col gap-1.5">

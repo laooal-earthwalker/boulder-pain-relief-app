@@ -25,10 +25,12 @@ interface Landmark {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+// Intensity scale 1–5
 export function spotColor(intensity: number): string {
-  if (intensity <= 3) return "#fcd34d";
-  if (intensity <= 5) return "#f97316";
-  if (intensity <= 7) return "#ef4444";
+  if (intensity <= 1) return "#fcd34d";
+  if (intensity <= 2) return "#f97316";
+  if (intensity <= 3) return "#ef4444";
+  if (intensity <= 4) return "#dc2626";
   return "#991b1b";
 }
 
@@ -64,17 +66,17 @@ function getLocalPt(e: React.MouseEvent<SVGGElement>): { x: number; y: number } 
 
 const FRONT_LANDMARKS: Landmark[] = [
   { id: "head",         label: "Head",                  x: 70,  y: 20  },
-  { id: "neck",         label: "Neck",                  x: 70,  y: 60  },
+  { id: "neck",         label: "Front of Neck",         x: 70,  y: 60  },
   { id: "r-shoulder",   label: "Right Shoulder",        x: 116, y: 88  },
   { id: "l-shoulder",   label: "Left Shoulder",         x: 24,  y: 88  },
-  { id: "sternum",      label: "Sternum",               x: 70,  y: 96  },
-  { id: "r-pec",        label: "Right Pec",             x: 92,  y: 112 },
-  { id: "l-pec",        label: "Left Pec",              x: 48,  y: 112 },
+  { id: "sternum",      label: "Chest (Center)",        x: 70,  y: 96  },
+  { id: "r-pec",        label: "Right Chest",           x: 92,  y: 112 },
+  { id: "l-pec",        label: "Left Chest",            x: 48,  y: 112 },
   { id: "r-upper-arm",  label: "Right Upper Arm",       x: 122, y: 138 },
   { id: "l-upper-arm",  label: "Left Upper Arm",        x: 18,  y: 138 },
   { id: "r-elbow",      label: "Right Elbow",           x: 122, y: 172 },
   { id: "l-elbow",      label: "Left Elbow",            x: 18,  y: 172 },
-  { id: "solar-plexus", label: "Solar Plexus",          x: 70,  y: 142 },
+  { id: "solar-plexus", label: "Upper Abdomen",         x: 70,  y: 142 },
   { id: "abdomen",      label: "Abdomen",               x: 70,  y: 168 },
   { id: "r-forearm",    label: "Right Forearm",         x: 118, y: 202 },
   { id: "l-forearm",    label: "Left Forearm",          x: 22,  y: 202 },
@@ -91,12 +93,12 @@ const FRONT_LANDMARKS: Landmark[] = [
   { id: "l-out-thigh",  label: "Left Outer Thigh",      x: 42,  y: 272 },
   { id: "r-in-thigh",   label: "Right Inner Thigh",     x: 78,  y: 272 },
   { id: "l-in-thigh",   label: "Left Inner Thigh",      x: 62,  y: 272 },
-  { id: "r-quad",       label: "Right Quad",            x: 90,  y: 298 },
-  { id: "l-quad",       label: "Left Quad",             x: 50,  y: 298 },
-  { id: "r-lat-knee",   label: "Right Lateral Knee",    x: 102, y: 336 },
-  { id: "l-lat-knee",   label: "Left Lateral Knee",     x: 38,  y: 336 },
-  { id: "r-med-knee",   label: "Right Medial Knee",     x: 82,  y: 336 },
-  { id: "l-med-knee",   label: "Left Medial Knee",      x: 58,  y: 336 },
+  { id: "r-quad",       label: "Right Front Thigh",     x: 90,  y: 298 },
+  { id: "l-quad",       label: "Left Front Thigh",      x: 50,  y: 298 },
+  { id: "r-lat-knee",   label: "Right Outer Knee",      x: 102, y: 336 },
+  { id: "l-lat-knee",   label: "Left Outer Knee",       x: 38,  y: 336 },
+  { id: "r-med-knee",   label: "Right Inner Knee",      x: 82,  y: 336 },
+  { id: "l-med-knee",   label: "Left Inner Knee",       x: 58,  y: 336 },
   { id: "r-shin",       label: "Right Shin",            x: 92,  y: 368 },
   { id: "l-shin",       label: "Left Shin",             x: 48,  y: 368 },
   { id: "r-ankle",      label: "Right Ankle",           x: 86,  y: 402 },
@@ -106,22 +108,22 @@ const FRONT_LANDMARKS: Landmark[] = [
 ];
 
 const BACK_LANDMARKS: Landmark[] = [
-  { id: "head",         label: "Head",                  x: 70,  y: 20  },
-  { id: "cerv-spine",   label: "Cervical Spine",        x: 70,  y: 58  },
-  { id: "r-upper-trap", label: "Right Upper Trap",      x: 94,  y: 76  },
-  { id: "l-upper-trap", label: "Left Upper Trap",       x: 46,  y: 76  },
+  { id: "head",         label: "Back of Head",          x: 70,  y: 20  },
+  { id: "cerv-spine",   label: "Back of Neck",          x: 70,  y: 58  },
+  { id: "r-upper-trap", label: "Right Neck / Trap",     x: 94,  y: 76  },
+  { id: "l-upper-trap", label: "Left Neck / Trap",      x: 46,  y: 76  },
   { id: "r-shoulder",   label: "Right Shoulder",        x: 122, y: 92  },
   { id: "l-shoulder",   label: "Left Shoulder",         x: 18,  y: 92  },
-  { id: "r-scapula",    label: "Right Scapula",         x: 92,  y: 114 },
-  { id: "l-scapula",    label: "Left Scapula",          x: 48,  y: 114 },
+  { id: "r-scapula",    label: "Right Shoulder Blade",  x: 92,  y: 114 },
+  { id: "l-scapula",    label: "Left Shoulder Blade",   x: 48,  y: 114 },
   { id: "upper-back",   label: "Upper Back",            x: 70,  y: 108 },
   { id: "r-upper-arm",  label: "Right Upper Arm",       x: 126, y: 140 },
   { id: "l-upper-arm",  label: "Left Upper Arm",        x: 14,  y: 140 },
   { id: "r-elbow",      label: "Right Elbow",           x: 126, y: 174 },
   { id: "l-elbow",      label: "Left Elbow",            x: 14,  y: 174 },
   { id: "mid-back",     label: "Mid Back",              x: 70,  y: 138 },
-  { id: "r-lat",        label: "Right Lat",             x: 92,  y: 152 },
-  { id: "l-lat",        label: "Left Lat",              x: 48,  y: 152 },
+  { id: "r-lat",        label: "Right Side (Ribs)",     x: 92,  y: 152 },
+  { id: "l-lat",        label: "Left Side (Ribs)",      x: 48,  y: 152 },
   { id: "lower-back",   label: "Lower Back",            x: 70,  y: 172 },
   { id: "r-low-back",   label: "Right Lower Back",      x: 90,  y: 172 },
   { id: "l-low-back",   label: "Left Lower Back",       x: 50,  y: 172 },
@@ -131,15 +133,15 @@ const BACK_LANDMARKS: Landmark[] = [
   { id: "l-wrist",      label: "Left Wrist",            x: 20,  y: 228 },
   { id: "r-hand",       label: "Right Hand",            x: 116, y: 250 },
   { id: "l-hand",       label: "Left Hand",             x: 24,  y: 250 },
-  { id: "sacrum",       label: "Sacrum",                x: 70,  y: 218 },
-  { id: "r-glute",      label: "Right Glute",           x: 94,  y: 244 },
-  { id: "l-glute",      label: "Left Glute",            x: 46,  y: 244 },
+  { id: "sacrum",       label: "Tailbone Area",         x: 70,  y: 218 },
+  { id: "r-glute",      label: "Right Buttock",         x: 94,  y: 244 },
+  { id: "l-glute",      label: "Left Buttock",          x: 46,  y: 244 },
   { id: "r-out-thigh",  label: "Right Outer Thigh",     x: 100, y: 280 },
   { id: "l-out-thigh",  label: "Left Outer Thigh",      x: 40,  y: 280 },
   { id: "r-hamstring",  label: "Right Hamstring",       x: 88,  y: 302 },
   { id: "l-hamstring",  label: "Left Hamstring",        x: 52,  y: 302 },
-  { id: "r-popliteal",  label: "Right Popliteal Fossa", x: 88,  y: 350 },
-  { id: "l-popliteal",  label: "Left Popliteal Fossa",  x: 52,  y: 350 },
+  { id: "r-popliteal",  label: "Back of Right Knee",    x: 88,  y: 350 },
+  { id: "l-popliteal",  label: "Back of Left Knee",     x: 52,  y: 350 },
   { id: "r-calf",       label: "Right Calf",            x: 88,  y: 374 },
   { id: "l-calf",       label: "Left Calf",             x: 52,  y: 374 },
   { id: "r-achilles",   label: "Right Achilles",        x: 86,  y: 400 },
@@ -383,21 +385,11 @@ const FB_LLEG = `
 function SharedDefs() {
   return (
     <defs>
-      <radialGradient id="bm-fill-f" cx="38%" cy="24%" r="64%">
-        <stop offset="0%" stopColor="#ffffff" />
-        <stop offset="65%" stopColor="#f5f5f5" />
-        <stop offset="100%" stopColor="#e2e2e2" />
-      </radialGradient>
-      <radialGradient id="bm-fill-b" cx="58%" cy="27%" r="64%">
-        <stop offset="0%" stopColor="#fafafa" />
-        <stop offset="65%" stopColor="#eeeeee" />
-        <stop offset="100%" stopColor="#dedede" />
-      </radialGradient>
       <filter id="bm-blur-diffuse" x="-60%" y="-60%" width="220%" height="220%">
         <feGaussianBlur stdDeviation="4" />
       </filter>
       <filter id="bm-fig-shadow" x="-20%" y="-5%" width="140%" height="120%">
-        <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#888" floodOpacity="0.13" />
+        <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#64748b" floodOpacity="0.10" />
       </filter>
     </defs>
   );
@@ -564,7 +556,7 @@ interface Props {
 
 export default function BodyMap({ painSpots, onToggle, currentSize, intensity }: Props) {
   const [selectedSex, setSelectedSex] = useState<"male" | "female">("male");
-  const [hoverPos, setHoverPos] = useState<{ x: number; y: number; view: "front" | "back"; sex: "male" | "female" } | null>(null);
+  const [hoverPos, setHoverPos] = useState<{ x: number; y: number; screenX: number; screenY: number; view: "front" | "back"; sex: "male" | "female" } | null>(null);
 
   function handleBodyClick(
     e: React.MouseEvent<SVGGElement>,
@@ -581,7 +573,7 @@ export default function BodyMap({ painSpots, onToggle, currentSize, intensity }:
 
   function handleBodyMove(e: React.MouseEvent<SVGGElement>, view: "front" | "back", sex: "male" | "female") {
     const local = getLocalPt(e);
-    if (local) setHoverPos({ ...local, view, sex });
+    if (local) setHoverPos({ ...local, screenX: e.clientX, screenY: e.clientY, view, sex });
   }
 
   function handleBodyLeave() {
@@ -639,12 +631,11 @@ export default function BodyMap({ painSpots, onToggle, currentSize, intensity }:
     torsoPth: string,
     rlegPth: string,
     llegPth: string,
-    fillId: string,
     muscleEl: React.ReactNode
   ) {
     const isSelected = sex === selectedSex;
     return (
-      <g opacity={isSelected ? 1 : 0.38} style={{ transition: "opacity 0.2s" }}>
+      <g opacity={isSelected ? 1 : 0.35} style={{ transition: "opacity 0.2s" }}>
         <g
           onClick={(e) => handleBodyClick(e, view, sex)}
           onMouseMove={(e) => handleBodyMove(e, view, sex)}
@@ -652,15 +643,15 @@ export default function BodyMap({ painSpots, onToggle, currentSize, intensity }:
           style={{ cursor: "crosshair" }}
           filter="url(#bm-fig-shadow)"
         >
-          <path d={torsoPth} fill={fillId} />
-          <path d={rlegPth} fill={fillId} />
-          <path d={llegPth} fill={fillId} />
+          <path d={torsoPth} fill="white" />
+          <path d={rlegPth} fill="white" />
+          <path d={llegPth} fill="white" />
         </g>
         <g pointerEvents="none">{muscleEl}</g>
         <g pointerEvents="none">
-          <path d={torsoPth} fill="none" stroke="#1a1a1a" strokeWidth={1.25} strokeLinejoin="round" />
-          <path d={rlegPth} fill="none" stroke="#1a1a1a" strokeWidth={1.25} strokeLinejoin="round" />
-          <path d={llegPth} fill="none" stroke="#1a1a1a" strokeWidth={1.25} strokeLinejoin="round" />
+          <path d={torsoPth} fill="none" stroke="#1e293b" strokeWidth={1.4} strokeLinejoin="round" />
+          <path d={rlegPth} fill="none" stroke="#1e293b" strokeWidth={1.4} strokeLinejoin="round" />
+          <path d={llegPth} fill="none" stroke="#1e293b" strokeWidth={1.4} strokeLinejoin="round" />
         </g>
         {renderSpots(view, sex)}
         {renderHoverDot(view, sex)}
@@ -668,8 +659,21 @@ export default function BodyMap({ painSpots, onToggle, currentSize, intensity }:
     );
   }
 
+  const tooltipLabel = hoverPos
+    ? nearestLandmark(hoverPos.x, hoverPos.y, hoverPos.view === "front" ? FRONT_LANDMARKS : BACK_LANDMARKS).label
+    : null;
+
   return (
     <div className="flex flex-col items-center gap-4">
+      {/* Floating anatomy label tooltip */}
+      {hoverPos && tooltipLabel && (
+        <div
+          className="pointer-events-none fixed z-50 rounded-md bg-slate-800/90 px-2.5 py-1 text-[11px] font-medium text-white shadow-md backdrop-blur-sm"
+          style={{ left: hoverPos.screenX + 16, top: hoverPos.screenY - 32 }}
+        >
+          {tooltipLabel}
+        </div>
+      )}
       {/* Sex selector */}
       <div className="flex items-center gap-2.5">
         <span className="text-xs text-slate-500">Select figure:</span>
@@ -712,25 +716,25 @@ export default function BodyMap({ painSpots, onToggle, currentSize, intensity }:
 
           {/* Male anterior */}
           <g transform="translate(4, 22)">
-            {fig("front", "male", MF_TORSO, MF_RLEG, MF_LLEG, "url(#bm-fill-f)", <FrontLines />)}
+            {fig("front", "male", MF_TORSO, MF_RLEG, MF_LLEG, <FrontLines />)}
             <text x="70" y="432" textAnchor="middle" fontSize={6.5} fontWeight="600" fill="#9ca3af" letterSpacing="1.5" style={{ pointerEvents: "none" }}>ANTERIOR</text>
           </g>
 
           {/* Male posterior */}
           <g transform="translate(156, 22)">
-            {fig("back", "male", MB_TORSO, MB_RLEG, MB_LLEG, "url(#bm-fill-b)", <BackLines />)}
+            {fig("back", "male", MB_TORSO, MB_RLEG, MB_LLEG, <BackLines />)}
             <text x="70" y="432" textAnchor="middle" fontSize={6.5} fontWeight="600" fill="#9ca3af" letterSpacing="1.5" style={{ pointerEvents: "none" }}>POSTERIOR</text>
           </g>
 
           {/* Female anterior */}
           <g transform="translate(4, 486)">
-            {fig("front", "female", FF_TORSO, FF_RLEG, FF_LLEG, "url(#bm-fill-f)", <><FrontLines /><FemaleChestLines /></>)}
+            {fig("front", "female", FF_TORSO, FF_RLEG, FF_LLEG, <><FrontLines /><FemaleChestLines /></>)}
             <text x="70" y="432" textAnchor="middle" fontSize={6.5} fontWeight="600" fill="#9ca3af" letterSpacing="1.5" style={{ pointerEvents: "none" }}>ANTERIOR</text>
           </g>
 
           {/* Female posterior */}
           <g transform="translate(156, 486)">
-            {fig("back", "female", FB_TORSO, FB_RLEG, FB_LLEG, "url(#bm-fill-b)", <BackLines />)}
+            {fig("back", "female", FB_TORSO, FB_RLEG, FB_LLEG, <BackLines />)}
             <text x="70" y="432" textAnchor="middle" fontSize={6.5} fontWeight="600" fill="#9ca3af" letterSpacing="1.5" style={{ pointerEvents: "none" }}>POSTERIOR</text>
           </g>
         </svg>
@@ -753,7 +757,7 @@ export default function BodyMap({ painSpots, onToggle, currentSize, intensity }:
             >
               <span className="inline-block rounded-full" style={{ width: 7, height: 7, backgroundColor: spotColor(spot.intensity) }} />
               {spot.label}
-              <span className="opacity-60">&middot; {spot.size} &middot; {spot.intensity}/10</span>
+              <span className="opacity-60">&middot; {spot.size} &middot; {spot.intensity}/5</span>
               <span className="ml-0.5 opacity-50">×</span>
             </button>
           ))}
