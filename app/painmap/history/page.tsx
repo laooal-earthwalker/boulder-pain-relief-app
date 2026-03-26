@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import MiniBodyMap from "@/components/pain-tool/MiniBodyMap";
+import ConnectedTimeline from "@/components/pain-tool/ConnectedTimeline";
 import type { PainMapSession } from "@/types/painmap";
 
 function spotColor(intensity: number): string {
@@ -99,10 +100,45 @@ export default function PainMapHistoryPage() {
         )}
 
         {sessions.length > 0 && (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-6">
             <p className="text-sm text-slate-500">
               {sessions.length} session{sessions.length !== 1 ? "s" : ""} recorded
             </p>
+
+            {/* ── Connected timeline visualization ── */}
+            {sessions.length >= 2 && (
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                <div className="mb-3 flex flex-wrap items-baseline gap-3">
+                  <h2 className="text-sm font-semibold text-slate-700">Pain Region Timeline</h2>
+                  <div className="flex items-center gap-3 text-[10px] text-slate-400">
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block h-0.5 w-4 rounded-full bg-[#2DD4BF]" />
+                      Improving
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block h-0.5 w-4 rounded-full bg-[#F59E0B]" />
+                      Stable
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block h-0.5 w-4 rounded-full bg-[#FB7185]" />
+                      Worsening
+                    </span>
+                  </div>
+                  <p className="ml-auto text-[10px] text-slate-400">Hover a line for details</p>
+                </div>
+                {/* Timeline is newest-last (chronological left→right) */}
+                <ConnectedTimeline
+                  sessions={[...sessions].sort(
+                    (a, b) =>
+                      new Date(a.timestamp).getTime() -
+                      new Date(b.timestamp).getTime()
+                  )}
+                />
+              </div>
+            )}
+
+            {/* ── Session cards ── */}
+            <div className="flex flex-col gap-4">
 
             {sessions.map((session, idx) => {
               const maxIntensity = session.spots.reduce(
@@ -169,6 +205,7 @@ export default function PainMapHistoryPage() {
                 </div>
               );
             })}
+            </div>{/* end session cards */}
           </div>
         )}
       </div>
