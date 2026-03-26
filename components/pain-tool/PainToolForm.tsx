@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import BodyMap, { type PainSpot, type SpotSize, spotColor } from "./BodyMap";
+import type { SessionComparison, ClinicalInsight } from "@/types/painmap";
 
 const BOOKING_URL =
   "https://app.acuityscheduling.com/schedule.php?owner=38155939";
@@ -203,6 +204,11 @@ export default function PainToolForm() {
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
 
+  // Longitudinal tracking
+  const [clientToken, setClientToken] = useState<string | null>(null);
+  const [sessionComparison, setSessionComparison] = useState<SessionComparison | null>(null);
+  const [sessionInsights, setSessionInsights] = useState<ClinicalInsight[]>([]);
+
   // Auto-scroll to response panel on mobile after submission
   const responsePanelRef = useRef<HTMLDivElement>(null);
 
@@ -215,6 +221,16 @@ export default function PainToolForm() {
       setUser(session?.user ?? null);
     });
     return () => subscription.unsubscribe();
+  }, []);
+
+  // Initialise anonymous client token for longitudinal tracking
+  useEffect(() => {
+    let token = localStorage.getItem("painmap_token");
+    if (!token) {
+      token = crypto.randomUUID();
+      localStorage.setItem("painmap_token", token);
+    }
+    setClientToken(token);
   }, []);
 
   function setField<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -305,6 +321,28 @@ export default function PainToolForm() {
       const data: AiAssessment = await res.json();
       setAiResponse(data);
       setDone(true);
+
+      // Auto-save session to longitudinal store (non-fatal)
+      if (clientToken) {
+        fetch("/api/painmap/sessions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            clientToken,
+            spots: painSpots,
+            duration: form.duration,
+            worseWith: form.worseWith || undefined,
+            betterWith: form.betterWith || undefined,
+            figure: "male",
+          }),
+        })
+          .then((r) => r.json())
+          .then((d) => {
+            setSessionComparison(d.comparison ?? null);
+            setSessionInsights(d.insights ?? []);
+          })
+          .catch(() => {});
+      }
 
       // Scroll response panel into view on mobile
       setTimeout(() => {
@@ -753,6 +791,122 @@ export default function PainToolForm() {
               </div>
             )}
           </div>
+
+          {/* ── Session comparison (View 3) ──────────────────────────── */}
+          {done && sessionComparison && (
+            <div className="border-t border-slate-100 px-5 py-5 sm:px-7">
+              <p className="mb-3 text-sm font-semibold text-slate-700">
+                {sessionComparison.previousSession
+                  ? "This session vs. your last"
+                  : "First session recorded"}
+              </p>
+
+              {sessionComparison.previousSession ? (
+                <div className="flex flex-col gap-2">
+                  {sessionComparison.newRegions.length > 0 && (
+                    <div>
+                      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-red-500">
+                        New regions
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {sessionComparison.newRegions.map((r) => (
+                          <span
+                            key={r}
+                            className="rounded-full border border-red-200 bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700"
+                          >
+                            + {r}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {sessionComparison.resolvedRegions.length > 0 && (
+                    <div>
+                      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-teal-600">
+                        Resolved
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {sessionComparison.resolvedRegions.map((r) => (
+                          <span
+                            key={r}
+                            className="rounded-full border border-teal-200 bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-teal-700"
+                          >
+                            ✓ {r}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {sessionComparison.persistentRegions.length > 0 && (
+                    <div>
+                      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-amber-600">
+                        Ongoing
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {sessionComparison.persistentRegions.map((r) => (
+                          <span
+                            key={r.label}
+                            className="flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700"
+                          >
+                            {r.label}
+                            <span className="opacity-60">
+                              · {r.sessionCount} session{r.sessionCount !== 1 ? "s" : ""}
+                              {r.intensityTrend === "down" ? " ↓" : r.intensityTrend === "up" ? " ↑" : ""}
+                            </span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {sessionComparison.newRegions.length === 0 &&
+                    sessionComparison.resolvedRegions.length === 0 &&
+                    sessionComparison.persistentRegions.length === 0 && (
+                      <p className="text-sm text-slate-400">No change from last session.</p>
+                    )}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-400">
+                  Your pain pattern is now being tracked. Come back after your next session to see how things change.
+                </p>
+              )}
+
+              {/* History / patterns links */}
+              <div className="mt-3 flex items-center gap-4 border-t border-slate-100 pt-3">
+                <Link
+                  href="/painmap/history"
+                  className="text-xs font-medium text-teal-600 hover:text-teal-700"
+                >
+                  View full history →
+                </Link>
+                <Link
+                  href="/painmap/patterns"
+                  className="text-xs font-medium text-slate-500 hover:text-slate-700"
+                >
+                  Pattern analysis →
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* ── Clinical insights (3+ sessions) ─────────────────────── */}
+          {done && sessionInsights.length > 0 && (
+            <div className="border-t border-amber-100 bg-amber-50 px-5 py-5 sm:px-7">
+              <div className="mb-2 flex items-center gap-2">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-white">!</span>
+                <p className="text-sm font-semibold text-amber-900">Pattern Detected</p>
+              </div>
+              <div className="flex flex-col gap-3">
+                {sessionInsights.map((insight, i) => (
+                  <p key={i} className="text-sm leading-relaxed text-amber-800">
+                    {insight.message}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Footer — booking CTA + save */}
           {done && aiResponse && (
