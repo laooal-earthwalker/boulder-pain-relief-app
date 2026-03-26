@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(node -e \"const fs=require\\(''fs''\\); const buf=fs.readFileSync\\(''public/logo.png.png''\\); const w=buf.readUInt32BE\\(16\\); const h=buf.readUInt32BE\\(20\\); console.log\\(''width:'',w,''height:'',h\\);\")",
+      "Bash(node -e \"const a = require\\(''@anthropic-ai/sdk''\\); console.log\\(Object.keys\\(a\\)\\)\")",
+      "Bash(npm install:*)",
+      "Bash(npx kill-port:*)",
+      "Bash(gh auth:*)",
+      "Bash(npx nex)",
+      "Bash(npx next:*)",
+      "Bash(find /c/Users/laooa/OneDrive/Documents/boulder-pain-relief-app -maxdepth 2 -type f \\\\\\(-name middleware.ts -o -name middleware.js -o -name clerkConfig* -o -name *clerk* \\\\\\))",
+      "Bash(grep -r \"ClerkProvider\\\\|useAuth\\\\|useUser\" /c/Users/laooa/OneDrive/Documents/boulder-pain-relief-app/app --include=*.tsx --include=*.ts)",
+      "Bash(find /c/Users/laooa/OneDrive/Documents/boulder-pain-relief-app/node_modules/next/dist/docs -name *proxy* -o -name *middleware*)",
+      "Bash(cd:*)",
+      "Bash(npm show:*)",
+      "Bash(curl:*)",
+      "Bash(gh api:*)",
+      "Bash(gh repo:*)",
+      "Bash(python:*)",
+      "Bash(grep -E \"^d.*data$\")",
+      "Bash(\"C:/Users/laooa/OneDrive/Documents/boulder-pain-relief-app/.gitignore\")"
+    ]
+  }
+}
