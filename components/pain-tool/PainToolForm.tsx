@@ -212,6 +212,11 @@ export default function PainToolForm() {
   // Auto-scroll to response panel on mobile after submission
   const responsePanelRef = useRef<HTMLDivElement>(null);
 
+  // Sticky floating controls
+  const controlsRef = useRef<HTMLDivElement>(null);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  const [stickyDismissed, setStickyDismissed] = useState(false);
+
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
@@ -231,6 +236,25 @@ export default function PainToolForm() {
       localStorage.setItem("painmap_token", token);
     }
     setClientToken(token);
+  }, []);
+
+  // Show sticky bar when controls panel scrolls out of view
+  useEffect(() => {
+    const el = controlsRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShowStickyBar(false);
+          setStickyDismissed(false);
+        } else {
+          setShowStickyBar(true);
+        }
+      },
+      { threshold: 0, rootMargin: "0px 0px -60px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   function setField<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -429,7 +453,7 @@ export default function PainToolForm() {
               </div>
 
               {/* Size + intensity selector */}
-              <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <div ref={controlsRef} className="rounded-xl border border-slate-200 bg-white p-3">
                 <p className="mb-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Pain spread &amp; intensity — select before tapping the map
                 </p>
@@ -962,6 +986,74 @@ export default function PainToolForm() {
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* ── Sticky floating controls bar ─────────────────────────────────── */}
+      <div
+        className="pointer-events-none fixed bottom-0 left-0 right-0 z-40 flex justify-center px-4 pb-4 transition-all duration-200"
+        style={{
+          opacity: showStickyBar && !stickyDismissed ? 1 : 0,
+          transform: showStickyBar && !stickyDismissed ? "translateY(0)" : "translateY(12px)",
+        }}
+      >
+        <div
+          className="pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl px-4 py-3 shadow-2xl"
+          style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          {/* Spread size pills */}
+          <div className="flex gap-1">
+            {(["pinpoint", "regional", "diffuse"] as SpotSize[]).map((size) => (
+              <button
+                key={size}
+                type="button"
+                onClick={() => setCurrentSize(size)}
+                className="rounded-full px-2.5 py-1 text-xs font-semibold capitalize transition"
+                style={{
+                  background: currentSize === size ? "#0d9488" : "rgba(255,255,255,0.08)",
+                  color: currentSize === size ? "#fff" : "#94a3b8",
+                }}
+              >
+                {size}
+              </button>
+            ))}
+          </div>
+
+          {/* Divider */}
+          <div className="h-5 w-px shrink-0" style={{ background: "rgba(255,255,255,0.12)" }} />
+
+          {/* Intensity dots */}
+          <div className="flex items-center gap-1.5">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setCurrentIntensity(n)}
+                className="h-5 w-5 rounded-full transition focus:outline-none"
+                aria-pressed={n === currentIntensity}
+                style={{
+                  backgroundColor: n <= currentIntensity ? spotColor(n) : "rgba(255,255,255,0.15)",
+                  transform: n === currentIntensity ? "scale(1.3)" : "scale(1)",
+                  boxShadow: n === currentIntensity ? `0 0 0 2px #1a1a2e, 0 0 0 3.5px ${spotColor(n)}` : "none",
+                }}
+              >
+                <span className="sr-only">{n}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Dismiss */}
+          <button
+            type="button"
+            onClick={() => setStickyDismissed(true)}
+            className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition"
+            style={{ color: "#64748b" }}
+            aria-label="Dismiss floating controls"
+          >
+            <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+              <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+            </svg>
+          </button>
         </div>
       </div>
     </>
