@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import {
-  MF_TORSO, MF_RLEG, MF_LLEG,
-  MB_TORSO, MB_RLEG, MB_LLEG,
-  FF_TORSO, FF_RLEG, FF_LLEG,
-  FB_TORSO, FB_RLEG, FB_LLEG,
-  SharedDefs, FrontLines, BackLines, FemaleChestLines,
+  SharedDefs,
+  MaleFrontFigure,
+  MaleBackFigure,
+  FemaleFrontFigure,
+  FemaleBackFigure,
+  FIGURE_LOCAL_W,
+  FIGURE_LOCAL_H,
 } from "./BodyFigures";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -245,31 +247,30 @@ export default function BodyMap({ painSpots, onToggle, currentSize, intensity }:
   function fig(
     view: "front" | "back",
     sex: "male" | "female",
-    torsoPth: string,
-    rlegPth: string,
-    llegPth: string,
-    muscleEl: React.ReactNode
+    figureEl: React.ReactNode
   ) {
     const isSelected = sex === selectedSex;
     return (
       <g opacity={isSelected ? 1 : 0.35} style={{ transition: "opacity 0.2s" }}>
+        {/* Real figure image (cropped from sprite sheet) */}
+        <g filter="url(#bm-fig-shadow)" pointerEvents="none">
+          {figureEl}
+        </g>
+        {/* Transparent click + hover overlay — sits over the image */}
         <g
           onClick={(e) => handleBodyClick(e, view, sex)}
           onMouseMove={(e) => handleBodyMove(e, view, sex)}
           onMouseLeave={handleBodyLeave}
           style={{ cursor: "crosshair" }}
-          filter="url(#bm-fig-shadow)"
         >
-          <path d={torsoPth} fill="white" />
-          <path d={rlegPth} fill="white" />
-          <path d={llegPth} fill="white" />
+          <rect
+            x={0} y={0}
+            width={FIGURE_LOCAL_W}
+            height={FIGURE_LOCAL_H}
+            fill="transparent"
+          />
         </g>
-        <g pointerEvents="none">{muscleEl}</g>
-        <g pointerEvents="none">
-          <path d={torsoPth} fill="none" stroke="#1e293b" strokeWidth={1.4} strokeLinejoin="round" />
-          <path d={rlegPth} fill="none" stroke="#1e293b" strokeWidth={1.4} strokeLinejoin="round" />
-          <path d={llegPth} fill="none" stroke="#1e293b" strokeWidth={1.4} strokeLinejoin="round" />
-        </g>
+        {/* Pain dots + hover preview */}
         {renderSpots(view, sex)}
         {renderHoverDot(view, sex)}
       </g>
@@ -333,25 +334,25 @@ export default function BodyMap({ painSpots, onToggle, currentSize, intensity }:
 
           {/* Male anterior */}
           <g transform="translate(4, 22)">
-            {fig("front", "male", MF_TORSO, MF_RLEG, MF_LLEG, <FrontLines />)}
+            {fig("front", "male", <MaleFrontFigure />)}
             <text x="70" y="432" textAnchor="middle" fontSize={6.5} fontWeight="600" fill="#9ca3af" letterSpacing="1.5" style={{ pointerEvents: "none" }}>ANTERIOR</text>
           </g>
 
           {/* Male posterior */}
           <g transform="translate(156, 22)">
-            {fig("back", "male", MB_TORSO, MB_RLEG, MB_LLEG, <BackLines />)}
+            {fig("back", "male", <MaleBackFigure />)}
             <text x="70" y="432" textAnchor="middle" fontSize={6.5} fontWeight="600" fill="#9ca3af" letterSpacing="1.5" style={{ pointerEvents: "none" }}>POSTERIOR</text>
           </g>
 
           {/* Female anterior */}
           <g transform="translate(4, 486)">
-            {fig("front", "female", FF_TORSO, FF_RLEG, FF_LLEG, <><FrontLines /><FemaleChestLines /></>)}
+            {fig("front", "female", <FemaleFrontFigure />)}
             <text x="70" y="432" textAnchor="middle" fontSize={6.5} fontWeight="600" fill="#9ca3af" letterSpacing="1.5" style={{ pointerEvents: "none" }}>ANTERIOR</text>
           </g>
 
           {/* Female posterior */}
           <g transform="translate(156, 486)">
-            {fig("back", "female", FB_TORSO, FB_RLEG, FB_LLEG, <BackLines />)}
+            {fig("back", "female", <FemaleBackFigure />)}
             <text x="70" y="432" textAnchor="middle" fontSize={6.5} fontWeight="600" fill="#9ca3af" letterSpacing="1.5" style={{ pointerEvents: "none" }}>POSTERIOR</text>
           </g>
         </svg>

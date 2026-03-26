@@ -1,18 +1,26 @@
 "use client";
 
-import { MF_TORSO, MF_RLEG, MF_LLEG } from "./BodyFigures";
+// MiniBodyMap — thumbnail body figure with plotted pain dots.
+// Uses the real figure image sprite; dots are placed in the 140×430
+// coordinate space that matches the stored cx/cy values.
+
 import type { PainMapSpot } from "@/types/painmap";
 
-// Viewport the body paths were drawn in
+const SPRITE   = "/images/painmap-figures.png";
+const IMG_W    = 2000;
+const IMG_H    = 1090;
+const SLICE_W  = 500;
+
+// Local coordinate space (matches BodyMap landmark grid)
 const VB_W = 140;
 const VB_H = 430;
 
 function spotColor(intensity: number): string {
-  if (intensity <= 1) return "#5eead4";
-  if (intensity <= 2) return "#fbbf24";
-  if (intensity <= 3) return "#f97316";
-  if (intensity <= 4) return "#ef4444";
-  return "#7c3aed";
+  if (intensity <= 1) return "#fcd34d";
+  if (intensity <= 2) return "#f97316";
+  if (intensity <= 3) return "#ef4444";
+  if (intensity <= 4) return "#dc2626";
+  return "#991b1b";
 }
 
 interface Props {
@@ -31,10 +39,19 @@ export default function MiniBodyMap({ spots, width = 56 }: Props) {
       aria-hidden
       className="shrink-0"
     >
-      {/* Body silhouette */}
-      <path d={MF_TORSO} fill="#e2e8f0" stroke="#cbd5e1" strokeWidth={0.8} />
-      <path d={MF_RLEG}  fill="#e2e8f0" stroke="#cbd5e1" strokeWidth={0.8} />
-      <path d={MF_LLEG}  fill="#e2e8f0" stroke="#cbd5e1" strokeWidth={0.8} />
+      {/* Figure image — Male Front by default for thumbnails.
+          preserveAspectRatio="none" stretches to fill exactly VB_W×VB_H,
+          so stored cx/cy values (0-140, 0-430) align proportionally. */}
+      <svg x={0} y={0} width={VB_W} height={VB_H} viewBox={`0 0 ${SLICE_W} ${IMG_H}`} overflow="hidden">
+        <image
+          href={SPRITE}
+          x={0}
+          y={0}
+          width={IMG_W}
+          height={IMG_H}
+          preserveAspectRatio="none"
+        />
+      </svg>
 
       {/* Pain spots */}
       {spots.map((s, i) => {
@@ -50,7 +67,9 @@ export default function MiniBodyMap({ spots, width = 56 }: Props) {
               cy={s.cy}
               r={r}
               fill={color}
-              opacity={0.85}
+              opacity={0.88}
+              stroke="white"
+              strokeWidth={1}
             />
           </g>
         );

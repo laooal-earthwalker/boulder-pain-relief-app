@@ -1,8 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { MF_TORSO, MF_RLEG, MF_LLEG } from "./BodyFigures";
 import type { PainMapSession } from "@/types/painmap";
+
+const SPRITE  = "/images/painmap-figures.png";
+const IMG_W   = 2000;
+const IMG_H   = 1090;
+const SLICE_W = 500;
 
 // ── Layout constants ──────────────────────────────────────────────────────────
 // Body paths are drawn in a 140 × 430 space.
@@ -125,21 +129,28 @@ export default function ConnectedTimeline({ sessions }: Props) {
           style={{ display: "block", minWidth: totalW }}
           aria-label="Connected pain timeline"
         >
-          {/* ── Body silhouettes ── */}
+          {/* ── Body silhouettes (real image sprite, Male Front) ── */}
           {sessions.map((_, colIdx) => {
             const tx = colIdx * (COL_W + SESS_GAP);
-            // Scale: paths drawn in 140×430, render at COL_W×COL_H
-            // strokeWidth is multiplied by scale, so divide to keep it ~1px visual
-            const sw = 1.4 / SX;
             return (
-              <g
+              <svg
                 key={`sil-${colIdx}`}
-                transform={`translate(${tx}, 0) scale(${SX}, ${SY})`}
+                x={tx}
+                y={0}
+                width={COL_W}
+                height={COL_H}
+                viewBox={`0 0 ${SLICE_W} ${IMG_H}`}
+                overflow="hidden"
               >
-                <path d={MF_TORSO} fill="#f1f5f9" stroke="#cbd5e1" strokeWidth={sw} />
-                <path d={MF_RLEG}  fill="#f1f5f9" stroke="#cbd5e1" strokeWidth={sw} />
-                <path d={MF_LLEG}  fill="#f1f5f9" stroke="#cbd5e1" strokeWidth={sw} />
-              </g>
+                <image
+                  href={SPRITE}
+                  x={0}
+                  y={0}
+                  width={IMG_W}
+                  height={IMG_H}
+                  preserveAspectRatio="xMidYMid meet"
+                />
+              </svg>
             );
           })}
 
