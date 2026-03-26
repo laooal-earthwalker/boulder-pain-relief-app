@@ -44,3 +44,6 @@ next-env.d.ts
 
 # local pain-map session data (file-based store)
 /data/painmap-sessions.json
+
+# Claude Code local settings
+.claude/
