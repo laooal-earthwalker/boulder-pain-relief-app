@@ -6,6 +6,12 @@ import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import BodyMap, { type PainSpot, type SpotSize, spotColor } from "./BodyMap";
 import type { SessionComparison, ClinicalInsight } from "@/types/painmap";
+import {
+  addSession,
+  getSessions,
+  buildComparison,
+  computeInsights,
+} from "@/lib/painmap-client";
 
 const BOOKING_URL =
   "https://app.acuityscheduling.com/schedule.php?owner=38155939";
@@ -346,26 +352,22 @@ export default function PainToolForm() {
       setAiResponse(data);
       setDone(true);
 
-      // Auto-save session to longitudinal store (non-fatal)
-      if (clientToken) {
-        fetch("/api/painmap/sessions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            clientToken,
-            spots: painSpots,
-            duration: form.duration,
-            worseWith: form.worseWith || undefined,
-            betterWith: form.betterWith || undefined,
-            figure: "male",
-          }),
-        })
-          .then((r) => r.json())
-          .then((d) => {
-            setSessionComparison(d.comparison ?? null);
-            setSessionInsights(d.insights ?? []);
-          })
-          .catch(() => {});
+      // Auto-save session to localStorage longitudinal store
+      try {
+        const saved = addSession({
+          clientToken: clientToken ?? "",
+          timestamp: new Date().toISOString(),
+          spots: painSpots,
+          duration: form.duration,
+          worseWith: form.worseWith || undefined,
+          betterWith: form.betterWith || undefined,
+          figure: "male",
+        });
+        const allSessions = getSessions();
+        setSessionComparison(buildComparison(saved, allSessions));
+        setSessionInsights(computeInsights(allSessions));
+      } catch {
+        // Non-fatal — tracking failure should not break the main flow
       }
 
       // Scroll response panel into view on mobile

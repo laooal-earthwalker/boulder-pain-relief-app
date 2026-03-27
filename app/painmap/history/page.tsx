@@ -33,20 +33,17 @@ export default function PainMapHistoryPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("painmap_token");
-    if (!token) { setLoading(false); return; }
-
-    fetch(`/api/painmap/sessions?token=${encodeURIComponent(token)}`)
-      .then((r) => r.json())
-      .then((d) => {
-        const sorted = [...(d.sessions ?? [])].sort(
-          (a: PainMapSession, b: PainMapSession) =>
-            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
-        setSessions(sorted);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    try {
+      const raw = localStorage.getItem("painmap-sessions");
+      const all: PainMapSession[] = raw ? JSON.parse(raw) : [];
+      const sorted = [...all].sort(
+        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      setSessions(sorted);
+    } catch {
+      // ignore parse errors
+    }
+    setLoading(false);
   }, []);
 
   return (

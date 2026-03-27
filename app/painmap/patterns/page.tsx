@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import type { PatternData, RegionFrequency, ClinicalInsight } from "@/types/painmap";
+import type { PatternData, RegionFrequency, ClinicalInsight, PainMapSession } from "@/types/painmap";
+import { computeRegionFrequencies, computeInsights } from "@/lib/painmap-insights";
 
 const TREND_CONFIG = {
   improving: { label: "Improving", color: "text-teal-600", bg: "bg-teal-50", icon: "↓" },
@@ -89,14 +90,18 @@ export default function PainMapPatternsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("painmap_token");
-    if (!token) { setLoading(false); return; }
-
-    fetch(`/api/painmap/patterns?token=${encodeURIComponent(token)}`)
-      .then((r) => r.json())
-      .then((d) => setData(d as PatternData))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    try {
+      const raw = localStorage.getItem("painmap-sessions");
+      const all: PainMapSession[] = raw ? JSON.parse(raw) : [];
+      setData({
+        frequencies: computeRegionFrequencies(all),
+        insights: computeInsights(all),
+        totalSessions: all.length,
+      });
+    } catch {
+      // ignore parse errors
+    }
+    setLoading(false);
   }, []);
 
   const topFrequencies = data?.frequencies.filter((f) => f.count > 0) ?? [];
