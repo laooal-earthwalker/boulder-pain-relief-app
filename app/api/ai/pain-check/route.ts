@@ -1,20 +1,6 @@
-/**
- * POST /api/ai/pain-check
- *
- * HIPAA requirements enforced here:
- *  - Auth check before any processing
- *  - PHI stripped via sanitizeSpotsForAI() before the Claude call
- *  - Only clinical content (region label, intensity, activity text) sent to Claude
- *  - No client name, email, or user ID ever sent to the external API
- *  - Action logged to audit_logs (user ID + action type only, no PHI)
- *  - No console.log of PHI anywhere in this file
- */
-
 import { anthropic } from "@/lib/anthropic";
-import { createClient } from "@/lib/supabase/server";
 import { CLINICAL_SYSTEM_PROMPT } from "@/lib/ai/systemPrompt";
-import { sanitizeSpotsForAI, assertNoPHI } from "@/lib/hipaa/sanitize";
-import { logAuditEvent, getClientIp } from "@/lib/hipaa/auditLog";
+import { sanitizeSpotsForAI } from "@/lib/hipaa/sanitize";
 
 interface IncomingSpot {
   label?: string;
@@ -30,17 +16,7 @@ interface RequestBody {
 }
 
 export async function POST(request: Request) {
-  // ── 1. Auth check — reject immediately if not authenticated ────────────────
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  // ── 2. Parse and validate input ────────────────────────────────────────────
+  // ── 1. Parse and validate input ────────────────────────────────────────────
   let body: RequestBody;
   try {
     body = await request.json();
@@ -62,32 +38,14 @@ export async function POST(request: Request) {
     );
   }
 
-  // ── 3. Sanitize — strip all PHI before building the Claude payload ─────────
-  const sanitized = sanitizeSpotsForAI(body.spots);
-
-  // Guard: verify no PHI slipped through in activity text
-  try {
-    assertNoPHI(
-      sanitized.map((s) => s.activityText),
-      "activityText"
-    );
-  } catch {
-    // Block the request — PHI detected in free-text field.
-    // Do not log the content itself (that would log PHI).
-    return Response.json(
-      {
-        error:
-          "Your description appears to contain personal contact information. Please describe only the activity and body sensation.",
-      },
-      { status: 422 }
-    );
-  }
-
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json({ error: "API not configured." }, { status: 500 });
   }
 
-  // ── 4. Build the Claude user message — clinical content only ───────────────
+  // ── 2. Sanitize — strip PHI before building the Claude payload ─────────────
+  const sanitized = sanitizeSpotsForAI(body.spots);
+
+  // ── 3. Build the Claude user message ──────────────────────────────────────
   const userMessage = sanitized
     .map(
       (s) =>
@@ -95,7 +53,7 @@ export async function POST(request: Request) {
     )
     .join("\n\n---\n\n");
 
-  // ── 5. Call Claude — non-streaming (JSON response required) ───────────────
+  // ── 4. Call Claude ─────────────────────────────────────────────────────────
   let rawContent: string;
   try {
     const message = await anthropic.messages.create({
@@ -114,10 +72,9 @@ export async function POST(request: Request) {
     );
   }
 
-  // ── 6. Parse Claude's JSON response ───────────────────────────────────────
+  // ── 5. Parse Claude's JSON response ───────────────────────────────────────
   let assessment: unknown;
   try {
-    // Claude may wrap JSON in markdown fences — strip them
     const cleaned = rawContent
       .replace(/^```json\s*/i, "")
       .replace(/^```\s*/i, "")
@@ -130,10 +87,6 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-
-  // ── 7. Audit log — user ID + action only, no PHI ──────────────────────────
-  const ip = getClientIp(request);
-  await logAuditEvent(user.id, "ai_assessment_requested", ip);
 
   return Response.json(assessment, {
     headers: {
