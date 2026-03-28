@@ -214,10 +214,10 @@ const BodyMap = memo(function BodyMap({ painSpots, onToggle, currentSize, intens
     setHoverPos(null);
   }
 
-  // Render soft radial glow on suspected compensation chain origin regions.
-  // Shows on the target figure (usually front) when a source spot (usually back)
-  // is placed. Visual suggestion only — not a clinical diagnosis.
-  function renderCompChainGlows(view: "front" | "back", sex: "male" | "female") {
+  // Render dashed oval outlines on suspected compensation chain regions.
+  // Distinctly different from pain dots (solid) and diffuse spread (same-color glow).
+  // Visual suggestion only — not a clinical diagnosis.
+  function renderCompChainIndicators(view: "front" | "back", sex: "male" | "female") {
     if (sex !== selectedSex) return null;
     const targetLandmarks = view === "front" ? FRONT_LANDMARKS : BACK_LANDMARKS;
     return painSpots.flatMap((spot, i) => {
@@ -225,18 +225,31 @@ const BodyMap = memo(function BodyMap({ painSpots, onToggle, currentSize, intens
       if (!target || target.view !== view) return [];
       const lm = targetLandmarks.find((l) => l.label === target.label);
       if (!lm) return [];
-      const color = spotColor(spot.intensity);
       return [(
-        <circle
-          key={`chain-glow-${i}`}
-          cx={lm.x}
-          cy={lm.y}
-          r={22}
-          fill={color}
-          opacity={0.22}
-          filter="url(#bm-blur-diffuse)"
-          style={{ pointerEvents: "none" }}
-        />
+        <g key={`chain-${i}`} style={{ pointerEvents: "none" }}>
+          <ellipse
+            cx={lm.x}
+            cy={lm.y}
+            rx={18}
+            ry={14}
+            fill="none"
+            stroke="#2DD4BF"
+            strokeWidth={1.5}
+            strokeDasharray="4,3"
+            opacity={0.6}
+          />
+          <text
+            x={lm.x}
+            y={lm.y + 22}
+            textAnchor="middle"
+            fontSize={5.5}
+            fontFamily="system-ui, -apple-system, sans-serif"
+            fill="#2DD4BF"
+            opacity={0.75}
+          >
+            Likely involved
+          </text>
+        </g>
       )];
     });
   }
@@ -312,8 +325,8 @@ const BodyMap = memo(function BodyMap({ painSpots, onToggle, currentSize, intens
             fill="transparent"
           />
         </g>
-        {/* Compensation chain glow + pain dots + hover preview */}
-        {renderCompChainGlows(view, sex)}
+        {/* Compensation chain indicators + pain dots + hover preview */}
+        {renderCompChainIndicators(view, sex)}
         {renderSpots(view, sex)}
         {renderHoverDot(view, sex)}
       </g>
@@ -387,6 +400,30 @@ const BodyMap = memo(function BodyMap({ painSpots, onToggle, currentSize, intens
             {fig("back", "female", <FemaleBackFigure />)}
           </g>
         </svg>
+      </div>
+
+      {/* Visual legend */}
+      <div className="flex items-center gap-5 px-1">
+        <div className="flex items-center gap-1.5">
+          <span
+            className="inline-block rounded-full"
+            style={{ width: 9, height: 9, backgroundColor: "#F97316" }}
+          />
+          <span className="text-[10px] text-slate-400">Reported pain</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <svg width={18} height={14} viewBox="0 0 18 14" aria-hidden>
+            <ellipse
+              cx={9} cy={7} rx={8} ry={6}
+              fill="none"
+              stroke="#2DD4BF"
+              strokeWidth={1.5}
+              strokeDasharray="4,3"
+              opacity={0.7}
+            />
+          </svg>
+          <span className="text-[10px] text-slate-400">Likely involved area</span>
+        </div>
       </div>
 
       {/* Active spot chips */}
