@@ -209,6 +209,10 @@ export default function PainToolForm() {
   const [sessionComparison, setSessionComparison] = useState<SessionComparison | null>(null);
   const [sessionInsights, setSessionInsights] = useState<ClinicalInsight[]>([]);
 
+  // Duration field validation
+  const [durationError, setDurationError] = useState(false);
+  const durationRef = useRef<HTMLSelectElement>(null);
+
   // Auto-scroll to response panel on mobile after submission
   const responsePanelRef = useRef<HTMLDivElement>(null);
 
@@ -243,6 +247,7 @@ export default function PainToolForm() {
   }, []);
 
   function setField<K extends keyof FormState>(key: K, value: FormState[K]) {
+    if (key === "duration") setDurationError(false);
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
@@ -300,6 +305,12 @@ export default function PainToolForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!form.duration) {
+      setDurationError(true);
+      durationRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      durationRef.current?.focus();
+      return;
+    }
     setError(null);
     setAiResponse(null);
     setDone(false);
@@ -364,7 +375,7 @@ export default function PainToolForm() {
     }
   }
 
-  const canSubmit = painSpots.length > 0 && form.duration !== "" && !loading;
+  const canSubmit = painSpots.length > 0 && !loading;
 
   return (
     <>
@@ -497,7 +508,7 @@ export default function PainToolForm() {
             <div className="flex flex-col gap-1.5">
               <label
                 htmlFor="duration"
-                className="text-sm font-semibold text-slate-700"
+                className="text-sm font-bold text-slate-700"
               >
                 How long have you had this?{" "}
                 <span className="text-red-500" aria-hidden>
@@ -505,11 +516,15 @@ export default function PainToolForm() {
                 </span>
               </label>
               <select
+                ref={durationRef}
                 id="duration"
-                required
                 value={form.duration}
                 onChange={(e) => setField("duration", e.target.value)}
-                className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/20"
+                className={`rounded-xl border bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:bg-white focus:ring-2 ${
+                  durationError
+                    ? "border-red-500 ring-2 ring-red-500/20 focus:border-red-500 focus:ring-red-500/20"
+                    : "border-slate-200 focus:border-teal-500 focus:ring-teal-500/20"
+                }`}
               >
                 <option value="" disabled>
                   Select a timeframe
@@ -520,6 +535,9 @@ export default function PainToolForm() {
                   </option>
                 ))}
               </select>
+              {durationError && (
+                <p className="text-xs font-medium text-red-500">Required to submit</p>
+              )}
             </div>
 
             {/* ── Optional context — side by side on larger screens ───── */}

@@ -7,11 +7,11 @@ import ConnectedTimeline from "@/components/pain-tool/ConnectedTimeline";
 import type { PainMapSession } from "@/types/painmap";
 
 function spotColor(intensity: number): string {
-  if (intensity <= 1) return "#5eead4";
-  if (intensity <= 2) return "#fbbf24";
-  if (intensity <= 3) return "#f97316";
-  if (intensity <= 4) return "#ef4444";
-  return "#7c3aed";
+  if (intensity <= 1) return "#FCD34D";
+  if (intensity <= 2) return "#F59E0B";
+  if (intensity <= 3) return "#F97316";
+  if (intensity <= 4) return "#EF4444";
+  return "#DC2626";
 }
 
 function intensityLabel(n: number) {
@@ -123,14 +123,8 @@ export default function PainMapHistoryPage() {
                   </div>
                   <p className="ml-auto text-[10px] text-slate-400">Hover a line for details</p>
                 </div>
-                {/* Timeline is newest-last (chronological left→right) */}
-                <ConnectedTimeline
-                  sessions={[...sessions].sort(
-                    (a, b) =>
-                      new Date(a.timestamp).getTime() -
-                      new Date(b.timestamp).getTime()
-                  )}
-                />
+                {/* Timeline is newest-first (most recent on the left) */}
+                <ConnectedTimeline sessions={sessions} />
               </div>
             )}
 

@@ -36,11 +36,11 @@ interface Landmark {
 
 // Intensity scale 1–5
 export function spotColor(intensity: number): string {
-  if (intensity <= 1) return "#fcd34d";
-  if (intensity <= 2) return "#f97316";
-  if (intensity <= 3) return "#ef4444";
-  if (intensity <= 4) return "#dc2626";
-  return "#991b1b";
+  if (intensity <= 1) return "#FCD34D";
+  if (intensity <= 2) return "#F59E0B";
+  if (intensity <= 3) return "#F97316";
+  if (intensity <= 4) return "#EF4444";
+  return "#DC2626";
 }
 
 export function spotRadius(size: SpotSize): number {

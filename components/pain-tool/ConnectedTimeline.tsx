@@ -61,11 +61,11 @@ function trendLabel(firstIntensity: number, lastIntensity: number): string {
 }
 
 function dotColor(intensity: number): string {
-  if (intensity <= 1) return "#5eead4";
-  if (intensity <= 2) return "#fbbf24";
-  if (intensity <= 3) return "#f97316";
-  if (intensity <= 4) return "#ef4444";
-  return "#7c3aed";
+  if (intensity <= 1) return "#FCD34D";
+  if (intensity <= 2) return "#F59E0B";
+  if (intensity <= 3) return "#F97316";
+  if (intensity <= 4) return "#EF4444";
+  return "#DC2626";
 }
 
 function shortDate(iso: string): string {
