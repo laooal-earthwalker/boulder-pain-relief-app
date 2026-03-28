@@ -26,6 +26,7 @@ function FigureImage({ xOffset }: { xOffset: number }) {
       width={FIGURE_LOCAL_W}
       height={FIGURE_LOCAL_H}
       viewBox={`${xOffset} 0 ${SLICE_W} ${IMG_H}`}
+      preserveAspectRatio="xMidYMid slice"
       overflow="hidden"
     >
       <image
@@ -34,7 +35,7 @@ function FigureImage({ xOffset }: { xOffset: number }) {
         y={0}
         width={IMG_W}
         height={IMG_H}
-        preserveAspectRatio="xMidYMid meet"
+        preserveAspectRatio="none"
       />
     </svg>
   );
