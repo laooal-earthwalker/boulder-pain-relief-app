@@ -75,6 +75,24 @@ function shortDate(iso: string): string {
   });
 }
 
+// ── Compensation chain definitions ───────────────────────────────────────────
+// [fromLabel, toLabel] — posterior source → anterior target
+const COMP_CHAINS: [string, string][] = [
+  ["Right Neck / Trap",  "Front of Neck"],
+  ["Left Neck / Trap",   "Front of Neck"],
+  ["Back of Neck",       "Front of Neck"],
+  ["Upper Back",         "Right Chest"],
+  ["Upper Back",         "Left Chest"],
+  ["Mid Back",           "Right Chest"],
+  ["Mid Back",           "Left Chest"],
+  ["Lower Back",         "Right Hip"],
+  ["Lower Back",         "Left Hip"],
+  ["Right Lower Back",   "Right Hip"],
+  ["Left Lower Back",    "Left Hip"],
+  ["Right Buttock",      "Right Outer Thigh"],
+  ["Left Buttock",       "Left Outer Thigh"],
+];
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface Occurrence {
@@ -184,6 +202,36 @@ const ConnectedTimeline = memo(function ConnectedTimeline({ sessions }: Props) {
                 </svg>
               </g>
             );
+          })}
+
+          {/* ── Intra-session compensation chain lines ── */}
+          {sessions.map((session, colIdx) => {
+            if (session.spots.length < 2) return null;
+            const spotByLabel = new Map<string, typeof session.spots[0]>();
+            session.spots.forEach((s) => {
+              if (!spotByLabel.has(s.label)) spotByLabel.set(s.label, s);
+            });
+            return COMP_CHAINS.map(([fromLabel, toLabel], chainIdx) => {
+              const from = spotByLabel.get(fromLabel);
+              const to = spotByLabel.get(toLabel);
+              if (!from || !to) return null;
+              const x1 = fx(from.cx, colIdx, from.view ?? "back");
+              const y1 = fy(from.cy);
+              const x2 = fx(to.cx, colIdx, to.view ?? "front");
+              const y2 = fy(to.cy);
+              return (
+                <path
+                  key={`chain-${colIdx}-${chainIdx}`}
+                  d={bezierPath(x1, y1, x2, y2)}
+                  fill="none"
+                  stroke="#2DD4BF"
+                  strokeWidth={0.5}
+                  opacity={0.15}
+                  strokeDasharray="3,3"
+                  strokeLinecap="round"
+                />
+              );
+            });
           })}
 
           {/* ── Connecting bezier lines ── */}

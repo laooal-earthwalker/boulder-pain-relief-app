@@ -8,7 +8,6 @@ import { createClient } from "@/lib/supabase/client";
 
 const navLinks = [
   { href: "/about", label: "About" },
-  { href: "/painmap", label: "PainMap" },
   { href: "/resources", label: "Resources" },
   { href: "/courses", label: "Courses" },
   { href: "/shop", label: "Shop" },
@@ -16,11 +15,18 @@ const navLinks = [
   { href: "/booking", label: "Booking" },
 ];
 
+const painMapLinks = [
+  { href: "/painmap",          label: "Map Your Pain" },
+  { href: "/painmap/history",  label: "Session History" },
+  { href: "/painmap/patterns", label: "Pattern Analysis" },
+];
+
 const BOOKING_URL =
   "https://app.acuityscheduling.com/schedule.php?owner=38155939";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [painMapOpen, setPainMapOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string | null>(null);
 
@@ -83,7 +89,43 @@ export default function Header() {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-7 md:flex">
-          {navLinks.map((link) => (
+          <Link
+            href="/about"
+            className="text-sm font-medium text-slate-600 transition-colors hover:text-teal-700"
+          >
+            About
+          </Link>
+
+          {/* PainMap dropdown */}
+          <div className="group relative">
+            <button className="flex items-center gap-1 text-sm font-medium text-slate-600 transition-colors hover:text-teal-700">
+              PainMap
+              <svg
+                className="h-3 w-3 transition-transform duration-150 group-hover:rotate-180"
+                viewBox="0 0 12 12"
+                fill="currentColor"
+                aria-hidden
+              >
+                <path d="M6 8.5 1 3.5h10z" />
+              </svg>
+            </button>
+            {/* Dropdown panel — pt-1 creates seamless hover bridge */}
+            <div className="pointer-events-none absolute left-1/2 top-full z-50 -translate-x-1/2 pt-1 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+              <div className="w-44 overflow-hidden rounded-xl bg-teal-950 py-1.5 shadow-xl ring-1 ring-white/10">
+                {painMapLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="block px-4 py-2 text-sm text-teal-100 transition-colors hover:bg-teal-800 hover:text-white"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {navLinks.filter((l) => l.href !== "/about").map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -158,7 +200,45 @@ export default function Header() {
       {open && (
         <div className="border-t border-teal-100 bg-white px-6 pb-6 md:hidden">
           <nav className="flex flex-col gap-1 pt-3">
-            {navLinks.map((link) => (
+            <Link
+              href="/about"
+              onClick={() => setOpen(false)}
+              className="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-teal-50 hover:text-teal-800"
+            >
+              About
+            </Link>
+
+            {/* PainMap expandable section */}
+            <button
+              onClick={() => setPainMapOpen((v) => !v)}
+              className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-teal-50 hover:text-teal-800"
+            >
+              PainMap
+              <svg
+                className={`h-3 w-3 transition-transform duration-150 ${painMapOpen ? "rotate-180" : ""}`}
+                viewBox="0 0 12 12"
+                fill="currentColor"
+                aria-hidden
+              >
+                <path d="M6 8.5 1 3.5h10z" />
+              </svg>
+            </button>
+            {painMapOpen && (
+              <div className="ml-3 flex flex-col gap-0.5 rounded-lg bg-teal-950 py-1.5">
+                {painMapLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => { setOpen(false); setPainMapOpen(false); }}
+                    className="block px-4 py-2 text-sm text-teal-100 transition-colors hover:bg-teal-800 hover:text-white"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {navLinks.filter((l) => l.href !== "/about").map((link) => (
               <Link
                 key={link.href}
                 href={link.href}

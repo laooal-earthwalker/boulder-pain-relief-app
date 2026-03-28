@@ -163,6 +163,22 @@ const BACK_LANDMARKS: Landmark[] = [
   { id: "l-heel",       label: "Left Heel",             x: 76,  y: 278 },
 ];
 
+// ── Compensation chain: posterior source → anterior target ────────────────────
+// Maps a spot's label to the suggested compensation origin (label + view to
+// display the glow on). Used only as a visual suggestion — not a diagnosis.
+const COMP_CHAIN_MAP: Record<string, { label: string; view: "front" | "back" }> = {
+  "Right Neck / Trap":  { label: "Front of Neck",     view: "front" },
+  "Left Neck / Trap":   { label: "Front of Neck",     view: "front" },
+  "Back of Neck":       { label: "Front of Neck",     view: "front" },
+  "Upper Back":         { label: "Chest (Center)",    view: "front" },
+  "Mid Back":           { label: "Chest (Center)",    view: "front" },
+  "Lower Back":         { label: "Lower Abdomen",     view: "front" },
+  "Right Lower Back":   { label: "Right Hip",         view: "front" },
+  "Left Lower Back":    { label: "Left Hip",          view: "front" },
+  "Right Buttock":      { label: "Right Outer Thigh", view: "front" },
+  "Left Buttock":       { label: "Left Outer Thigh",  view: "front" },
+};
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 interface Props {
@@ -196,6 +212,33 @@ const BodyMap = memo(function BodyMap({ painSpots, onToggle, currentSize, intens
 
   function handleBodyLeave() {
     setHoverPos(null);
+  }
+
+  // Render soft radial glow on suspected compensation chain origin regions.
+  // Shows on the target figure (usually front) when a source spot (usually back)
+  // is placed. Visual suggestion only — not a clinical diagnosis.
+  function renderCompChainGlows(view: "front" | "back", sex: "male" | "female") {
+    if (sex !== selectedSex) return null;
+    const targetLandmarks = view === "front" ? FRONT_LANDMARKS : BACK_LANDMARKS;
+    return painSpots.flatMap((spot, i) => {
+      const target = COMP_CHAIN_MAP[spot.label];
+      if (!target || target.view !== view) return [];
+      const lm = targetLandmarks.find((l) => l.label === target.label);
+      if (!lm) return [];
+      const color = spotColor(spot.intensity);
+      return [(
+        <circle
+          key={`chain-glow-${i}`}
+          cx={lm.x}
+          cy={lm.y}
+          r={22}
+          fill={color}
+          opacity={0.22}
+          filter="url(#bm-blur-diffuse)"
+          style={{ pointerEvents: "none" }}
+        />
+      )];
+    });
   }
 
   function renderSpots(view: "front" | "back", sex: "male" | "female") {
@@ -269,7 +312,8 @@ const BodyMap = memo(function BodyMap({ painSpots, onToggle, currentSize, intens
             fill="transparent"
           />
         </g>
-        {/* Pain dots + hover preview */}
+        {/* Compensation chain glow + pain dots + hover preview */}
+        {renderCompChainGlows(view, sex)}
         {renderSpots(view, sex)}
         {renderHoverDot(view, sex)}
       </g>
