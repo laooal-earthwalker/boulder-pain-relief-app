@@ -246,26 +246,26 @@ export default function PainToolForm() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  function openModal(key: string, spot: PainSpot) {
+  const openModal = useCallback((key: string, spot: PainSpot) => {
     setModalData({ key, spot });
     // Double rAF: first waits for React commit, second triggers CSS transition
     requestAnimationFrame(() => {
       requestAnimationFrame(() => setModalVisible(true));
     });
-  }
+  }, []);
 
   const closeModal = useCallback(() => {
     setModalVisible(false);
     setTimeout(() => setModalData(null), 300);
   }, []);
 
-  function handleToggle(
+  const handleToggle = useCallback((
     regionId: string,
     label: string,
     cx: number,
     cy: number,
     view: "front" | "back"
-  ) {
+  ) => {
     const key = `${regionId}-${view}`;
     const existingSpot = painSpots.find(
       (s) => s.regionId === regionId && s.view === view
@@ -296,7 +296,7 @@ export default function PainToolForm() {
       setPainSpots((prev) => [...prev, newSpot]);
       openModal(key, newSpot);
     }
-  }
+  }, [painSpots, modalData, closeModal, currentSize, currentIntensity, openModal]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -1,17 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import type { PainMapSession } from "@/types/painmap";
 
-const SPRITE  = "/images/painmap-figures.png";
-const IMG_W   = 2000;
-const IMG_H   = 1090;
-const SLICE_W = 500;
+const SPRITE   = "/images/painmap-figures.png";
+const IMG_W    = 2816;
+const IMG_H    = 1536;
+const SLICE_W  = 704;   // one column (IMG_W / 4)
+const CROP_Y   = 40;    // matches BodyFigures CROP_Y_START
+const CROP_H   = 1460;  // matches BodyFigures CROP_H
 
 // ── Layout constants ──────────────────────────────────────────────────────────
-// Body paths are drawn in a 140 × 430 space.
+// Body paths are drawn in a 140 × 290 space (matches BodyMap FIGURE_LOCAL_*).
 const VB_W = 140;
-const VB_H = 430;
+const VB_H = 290;
 // Each session column is rendered at this size
 const COL_W = 72;
 const COL_H = Math.round(COL_W * (VB_H / VB_W)); // ≈ 221, preserves aspect ratio
@@ -90,7 +92,7 @@ interface Props {
   sessions: PainMapSession[];
 }
 
-export default function ConnectedTimeline({ sessions }: Props) {
+const ConnectedTimeline = memo(function ConnectedTimeline({ sessions }: Props) {
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
 
@@ -139,7 +141,8 @@ export default function ConnectedTimeline({ sessions }: Props) {
                 y={0}
                 width={COL_W}
                 height={COL_H}
-                viewBox={`0 0 ${SLICE_W} ${IMG_H}`}
+                viewBox={`0 ${CROP_Y} ${SLICE_W} ${CROP_H}`}
+                preserveAspectRatio="xMidYMid meet"
                 overflow="hidden"
               >
                 <image
@@ -148,7 +151,7 @@ export default function ConnectedTimeline({ sessions }: Props) {
                   y={0}
                   width={IMG_W}
                   height={IMG_H}
-                  preserveAspectRatio="xMidYMid meet"
+                  preserveAspectRatio="none"
                 />
               </svg>
             );
@@ -259,4 +262,6 @@ export default function ConnectedTimeline({ sessions }: Props) {
       )}
     </div>
   );
-}
+});
+
+export default ConnectedTimeline;

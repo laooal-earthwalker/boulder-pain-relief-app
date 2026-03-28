@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import {
   SharedDefs,
   MaleFrontFigure,
@@ -160,11 +160,6 @@ const BACK_LANDMARKS: Landmark[] = [
   { id: "l-heel",       label: "Left Heel",             x: 64,  y: 278 },
 ];
 
-// REGION_LABELS kept for backwards compatibility with external consumers
-export const REGION_LABELS: Record<string, string> = Object.fromEntries(
-  [...FRONT_LANDMARKS, ...BACK_LANDMARKS].map((lm) => [lm.id, lm.label])
-);
-
 // ── Main component ────────────────────────────────────────────────────────────
 
 interface Props {
@@ -174,7 +169,7 @@ interface Props {
   intensity: number;
 }
 
-export default function BodyMap({ painSpots, onToggle, currentSize, intensity }: Props) {
+const BodyMap = memo(function BodyMap({ painSpots, onToggle, currentSize, intensity }: Props) {
   const [selectedSex, setSelectedSex] = useState<"male" | "female">("male");
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number; screenX: number; screenY: number; view: "front" | "back"; sex: "male" | "female" } | null>(null);
 
@@ -372,4 +367,6 @@ export default function BodyMap({ painSpots, onToggle, currentSize, intensity }:
       )}
     </div>
   );
-}
+});
+
+export default BodyMap;
