@@ -3,22 +3,26 @@
 import React from "react";
 
 // ── Body figure image crop components ─────────────────────────────────────────
-// Source: /images/painmap-figures.png — 2000 × 1090 px
+// Source: /images/painmap-figures.png — 2816 × 1536 px (measured)
 // Layout (left → right): Male Front | Male Back | Female Front | Female Back
-// Each figure occupies a 500 × 1090 px slice.
-// These components render into the 140 × 430 local coordinate space used by
-// BodyMap. A nested <svg> with viewBox cropping isolates each figure slice.
+// Each figure occupies a 704 px wide column (2816 / 4).
+// Figures span y≈50–1490 in the sprite; we crop to y=40–1500 (±10px margin).
+// FIGURE_LOCAL_H is sized so the 704×1460 viewBox fills the display container
+// exactly when using preserveAspectRatio="xMidYMid meet" (no clipping ever).
 
-const SPRITE = "/images/painmap-figures.png";
-const IMG_W   = 2000;
-const IMG_H   = 1090;
-const SLICE_W = 500; // one figure slice
-// Pixel row where figure heads begin in the sprite — crops empty sky above
-const FIGURE_Y_CROP = 140;
+const SPRITE       = "/images/painmap-figures.png";
+const IMG_W        = 2816;
+const IMG_H        = 1536;
+const SLICE_W      = 704;  // one figure column (IMG_W / 4)
+const CROP_Y_START = 40;   // 10 px above first head pixel (y≈50)
+const CROP_Y_END   = 1500; // 10 px below last foot pixel (y≈1490)
+const CROP_H       = CROP_Y_END - CROP_Y_START; // 1460
 
-// Local coordinate space BodyMap draws everything in
+// Local coordinate space BodyMap draws everything in.
+// H is chosen so display aspect (140/290 ≈ 0.483) ≈ viewBox aspect (704/1460 ≈ 0.482),
+// making "meet" fill the container with zero dead space.
 export const FIGURE_LOCAL_W = 140;
-export const FIGURE_LOCAL_H = 430;
+export const FIGURE_LOCAL_H = 290;
 
 function FigureImage({ xOffset }: { xOffset: number }) {
   return (
@@ -27,8 +31,8 @@ function FigureImage({ xOffset }: { xOffset: number }) {
       y={0}
       width={FIGURE_LOCAL_W}
       height={FIGURE_LOCAL_H}
-      viewBox={`${xOffset} ${FIGURE_Y_CROP} ${SLICE_W} ${IMG_H - FIGURE_Y_CROP}`}
-      preserveAspectRatio="xMidYMin slice"
+      viewBox={`${xOffset} ${CROP_Y_START} ${SLICE_W} ${CROP_H}`}
+      preserveAspectRatio="xMidYMid meet"
       overflow="hidden"
     >
       <image
@@ -44,9 +48,9 @@ function FigureImage({ xOffset }: { xOffset: number }) {
 }
 
 export function MaleFrontFigure()   { return <FigureImage xOffset={0}    />; }
-export function MaleBackFigure()    { return <FigureImage xOffset={500}  />; }
-export function FemaleFrontFigure() { return <FigureImage xOffset={1000} />; }
-export function FemaleBackFigure()  { return <FigureImage xOffset={1500} />; }
+export function MaleBackFigure()    { return <FigureImage xOffset={704}  />; }
+export function FemaleFrontFigure() { return <FigureImage xOffset={1408} />; }
+export function FemaleBackFigure()  { return <FigureImage xOffset={2112} />; }
 
 // ── SVG filter defs ───────────────────────────────────────────────────────────
 
