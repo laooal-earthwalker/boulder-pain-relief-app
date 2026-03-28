@@ -10,27 +10,25 @@ export const metadata: Metadata = {
 export default function PainMapPage() {
   return (
     <div className="flex flex-1 flex-col bg-slate-50">
-      {/* ── Page header ───────────────────────────────────────────────── */}
-      <div className="border-b border-teal-900/20 bg-gradient-to-b from-teal-950 to-teal-900 px-6 py-5 text-center">
+      {/* ── Page header — hidden on mobile so figures are immediately visible */}
+      <div className="hidden sm:block border-b border-teal-900/20 bg-gradient-to-b from-teal-950 to-teal-900 px-6 py-4 text-center">
         <div className="mx-auto max-w-2xl">
           <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-teal-300">
             Boulder Pain Relief
           </p>
-          <h1 className="mb-1.5 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+          <h1 className="mb-1 text-xl font-semibold tracking-tight text-white sm:text-2xl">
             PainMap
           </h1>
-          <p className="text-sm text-teal-100/70">
+          <p className="text-xs text-teal-100/70">
             Mark where it hurts and get a plain-language soft-tissue assessment.
           </p>
         </div>
       </div>
 
       {/* ── Disclaimer banner ─────────────────────────────────────────── */}
-      <div className="border-b border-amber-200 bg-amber-50 px-6 py-3 text-center">
-        <p className="mx-auto max-w-3xl text-xs text-amber-800">
-          <strong>Educational tool only.</strong> This is not a medical
-          diagnosis. For acute injuries, severe symptoms, or anything involving
-          numbness, tingling, or radiating pain, please consult a physician.
+      <div className="border-b border-amber-200 bg-amber-50 px-4 py-1.5 text-center">
+        <p className="mx-auto max-w-3xl text-[11px] text-amber-800">
+          <strong>Educational tool only.</strong> Not a medical diagnosis — consult a physician for acute injuries, numbness, or radiating pain.
         </p>
       </div>
 

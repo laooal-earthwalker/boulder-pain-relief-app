@@ -430,33 +430,45 @@ export default function PainToolForm() {
         />
       )}
 
-      <div className="mx-auto grid max-w-6xl gap-4 px-4 py-4 sm:px-6 sm:py-6 lg:grid-cols-[1fr_1.2fr] lg:items-start lg:gap-8">
+      <div className="mx-auto grid max-w-6xl gap-3 px-3 py-2 sm:px-6 sm:py-4 lg:grid-cols-[1fr_1.2fr] lg:items-start lg:gap-8">
         {/* ── Form panel ──────────────────────────────────────────────────── */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-5">
-          <h2 className="mb-3 text-lg font-semibold text-slate-900">
-            Map Your Pain
-          </h2>
+        <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm sm:p-4">
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             {/* ── Step 1: Body map ────────────────────────────────────── */}
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-1">
-                <span className="text-sm font-semibold text-slate-700">
-                  Step 1 &mdash; Where is the pain?
-                </span>
-                <span className="text-red-500" aria-hidden>
-                  *
-                </span>
-              </div>
+            <div className="flex flex-col gap-2">
 
               {/* Body map — ref used to control floating bar visibility */}
-              <div ref={bodyMapRef} className="rounded-xl border border-slate-100 bg-slate-50 px-2 py-4 sm:px-4">
+              <div ref={bodyMapRef} className="rounded-xl border border-slate-100 bg-slate-50 px-1 py-2 sm:px-3">
                 <BodyMap
                   painSpots={painSpots}
                   onToggle={handleToggle}
                   currentSize={currentSize}
                   intensity={currentIntensity}
                 />
+              </div>
+
+              {/* Intensity legend — desktop only (mobile sees it in floating bar) */}
+              <div className="hidden sm:flex items-center gap-3 px-1">
+                <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                  Pain Intensity
+                </span>
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-1.5">
+                    {INTENSITY_COLORS.map((color, i) => (
+                      <span
+                        key={i}
+                        className="h-3 w-3 rounded-full"
+                        style={{ backgroundColor: color }}
+                        aria-hidden
+                      />
+                    ))}
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[9px] text-slate-400">Mild</span>
+                    <span className="text-[9px] text-slate-400">Severe</span>
+                  </div>
+                </div>
               </div>
 
               {/* Tap nudge — only shown when no spots placed */}

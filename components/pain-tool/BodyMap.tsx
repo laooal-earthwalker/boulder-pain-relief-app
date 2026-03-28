@@ -282,7 +282,7 @@ export default function BodyMap({ painSpots, onToggle, currentSize, intensity }:
     : null;
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-2">
       {/* Floating anatomy label tooltip */}
       {hoverPos && tooltipLabel && (
         <div
@@ -293,15 +293,14 @@ export default function BodyMap({ painSpots, onToggle, currentSize, intensity }:
         </div>
       )}
       {/* Sex selector */}
-      <div className="flex items-center gap-2.5">
-        <span className="text-xs text-slate-500">Select figure:</span>
+      <div className="flex items-center gap-2">
         <div className="flex overflow-hidden rounded-lg border border-slate-200">
           {(["male", "female"] as const).map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => setSelectedSex(s)}
-              className={`px-4 py-1.5 text-xs font-medium transition ${
+              className={`px-4 py-1 text-xs font-medium transition ${
                 selectedSex === s ? "bg-slate-800 text-white" : "text-slate-500 hover:bg-slate-50"
               }`}
             >
@@ -310,11 +309,6 @@ export default function BodyMap({ painSpots, onToggle, currentSize, intensity }:
           ))}
         </div>
       </div>
-
-      {/* Hint */}
-      <p className="text-center text-xs text-slate-400">
-        Click anywhere on a figure to mark pain &mdash; click a dot to remove it
-      </p>
 
       {/* 2×2 body map */}
       <div className="w-full">
