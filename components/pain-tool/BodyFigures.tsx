@@ -14,7 +14,7 @@ const IMG_W   = 2000;
 const IMG_H   = 1090;
 const SLICE_W = 500; // one figure slice
 // Pixel row where figure heads begin in the sprite — crops empty sky above
-const FIGURE_Y_CROP = 200;
+const FIGURE_Y_CROP = 160;
 
 // Local coordinate space BodyMap draws everything in
 export const FIGURE_LOCAL_W = 140;
