@@ -14,7 +14,7 @@ const IMG_W   = 2000;
 const IMG_H   = 1090;
 const SLICE_W = 500; // one figure slice
 // Pixel row where figure heads begin in the sprite — crops empty sky above
-const FIGURE_Y_CROP = 120;
+const FIGURE_Y_CROP = 140;
 
 // Local coordinate space BodyMap draws everything in
 export const FIGURE_LOCAL_W = 140;
@@ -28,7 +28,7 @@ function FigureImage({ xOffset }: { xOffset: number }) {
       width={FIGURE_LOCAL_W}
       height={FIGURE_LOCAL_H}
       viewBox={`${xOffset} ${FIGURE_Y_CROP} ${SLICE_W} ${IMG_H - FIGURE_Y_CROP}`}
-      preserveAspectRatio="xMidYMin slice"
+      preserveAspectRatio="xMidYMin meet"
       overflow="hidden"
     >
       <image
