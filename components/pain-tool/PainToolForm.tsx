@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef, useCallback } from "react";
-import type { User } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/client";
 import BodyMap, { type PainSpot, type SpotSize, spotColor } from "./BodyMap";
 import type { SessionComparison, ClinicalInsight } from "@/types/painmap";
 import {
@@ -206,12 +204,6 @@ export default function PainToolForm() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Auth — determines whether Save button is shown
-  // ⚠️ Supabase: user will be null until Supabase is connected
-  const [user, setUser] = useState<User | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [savedId, setSavedId] = useState<string | null>(null);
-
   // Longitudinal tracking
   const [clientToken, setClientToken] = useState<string | null>(null);
   const [sessionComparison, setSessionComparison] = useState<SessionComparison | null>(null);
@@ -224,17 +216,6 @@ export default function PainToolForm() {
   const bodyMapRef = useRef<HTMLDivElement>(null);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [stickyDismissed, setStickyDismissed] = useState(false);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_, session) => {
-      setUser(session?.user ?? null);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
 
   // Initialise anonymous client token for longitudinal tracking
   useEffect(() => {
@@ -381,35 +362,6 @@ export default function PainToolForm() {
       );
     } finally {
       setLoading(false);
-    }
-  }
-
-  // ⚠️ Supabase: handleSave posts to /api/pain-reports which requires auth.
-  // Returns 401 if not authenticated — handled gracefully by the UI.
-  async function handleSave() {
-    setSaving(true);
-    try {
-      const res = await fetch("/api/pain-reports", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          spots: painSpots,
-          activity_notes: painSpots.map((s) => ({
-            regionId: s.regionId,
-            label: s.label,
-            activityText: activityTexts[`${s.regionId}-${s.view}`] ?? "",
-          })),
-          overall_intensity: currentIntensity,
-          duration: form.duration,
-          worse_with: form.worseWith || null,
-          better_with: form.betterWith || null,
-          ai_interpretation: aiResponse,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) setSavedId(data.id);
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -886,40 +838,6 @@ export default function PainToolForm() {
                 </a>
               </div>
 
-              {/* Save to history */}
-              {/* ⚠️ Supabase: save only works once user has authenticated */}
-              <div className="mt-4 border-t border-slate-100 pt-4">
-                {savedId ? (
-                  <p className="flex items-center gap-2 text-xs text-teal-600">
-                    <CheckCircleIcon className="h-4 w-4" />
-                    Saved to your history —{" "}
-                    <Link
-                      href="/dashboard"
-                      className="underline hover:text-teal-700"
-                    >
-                      view it
-                    </Link>
-                  </p>
-                ) : user ? (
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="text-xs font-medium text-slate-500 transition hover:text-teal-600 disabled:opacity-50"
-                  >
-                    {saving ? "Saving…" : "Save this session to my history"}
-                  </button>
-                ) : (
-                  <p className="text-xs text-slate-400">
-                    <Link
-                      href="/auth/login"
-                      className="font-medium text-teal-600 hover:text-teal-700"
-                    >
-                      Log in
-                    </Link>{" "}
-                    to save this session and track your pain over time.
-                  </p>
-                )}
-              </div>
             </div>
           )}
         </div>
@@ -1104,24 +1022,6 @@ function ErrorIcon({ className }: { className?: string }) {
       <path
         fillRule="evenodd"
         d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-}
-
-function CheckCircleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        fillRule="evenodd"
-        d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z"
         clipRule="evenodd"
       />
     </svg>

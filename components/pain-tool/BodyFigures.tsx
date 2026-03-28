@@ -10,9 +10,11 @@ import React from "react";
 // BodyMap. A nested <svg> with viewBox cropping isolates each figure slice.
 
 const SPRITE = "/images/painmap-figures.png";
-const IMG_W  = 2000;
-const IMG_H  = 1090;
+const IMG_W   = 2000;
+const IMG_H   = 1090;
 const SLICE_W = 500; // one figure slice
+// Pixel row where figure heads begin in the sprite — crops empty sky above
+const FIGURE_Y_CROP = 243;
 
 // Local coordinate space BodyMap draws everything in
 export const FIGURE_LOCAL_W = 140;
@@ -25,8 +27,8 @@ function FigureImage({ xOffset }: { xOffset: number }) {
       y={0}
       width={FIGURE_LOCAL_W}
       height={FIGURE_LOCAL_H}
-      viewBox={`${xOffset} 0 ${SLICE_W} ${IMG_H}`}
-      preserveAspectRatio="xMidYMid slice"
+      viewBox={`${xOffset} ${FIGURE_Y_CROP} ${SLICE_W} ${IMG_H - FIGURE_Y_CROP}`}
+      preserveAspectRatio="xMidYMin slice"
       overflow="hidden"
     >
       <image
