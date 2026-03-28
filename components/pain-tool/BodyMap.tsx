@@ -313,7 +313,7 @@ export default function BodyMap({ painSpots, onToggle, currentSize, intensity }:
       {/* 2×2 body map */}
       <div className="w-full">
         <svg
-          viewBox="0 0 300 930"
+          viewBox="0 0 300 884"
           className="w-full"
           style={{ touchAction: "manipulation" }}
           role="img"
@@ -321,33 +321,27 @@ export default function BodyMap({ painSpots, onToggle, currentSize, intensity }:
         >
           <SharedDefs />
 
-          <text x="150" y="16" textAnchor="middle" fontSize={7.5} fontWeight="600" fill="#9ca3af" letterSpacing="2">MALE</text>
-          <text x="150" y="480" textAnchor="middle" fontSize={7.5} fontWeight="600" fill="#9ca3af" letterSpacing="2">FEMALE</text>
-          <line x1="4" y1="464" x2="296" y2="464" stroke="#e5e7eb" strokeWidth={1} />
-          <line x1="150" y1="6" x2="150" y2="924" stroke="#e5e7eb" strokeWidth={1} strokeDasharray="4,5" />
+          {/* Vertical centre divider only — no row labels */}
+          <line x1="150" y1="4" x2="150" y2="880" stroke="#e5e7eb" strokeWidth={1} strokeDasharray="4,5" />
 
           {/* Male anterior */}
-          <g transform="translate(4, 22)">
+          <g transform="translate(4, 4)">
             {fig("front", "male", <MaleFrontFigure />)}
-            <text x="70" y="432" textAnchor="middle" fontSize={6.5} fontWeight="600" fill="#9ca3af" letterSpacing="1.5" style={{ pointerEvents: "none" }}>ANTERIOR</text>
           </g>
 
           {/* Male posterior */}
-          <g transform="translate(156, 22)">
+          <g transform="translate(156, 4)">
             {fig("back", "male", <MaleBackFigure />)}
-            <text x="70" y="432" textAnchor="middle" fontSize={6.5} fontWeight="600" fill="#9ca3af" letterSpacing="1.5" style={{ pointerEvents: "none" }}>POSTERIOR</text>
           </g>
 
-          {/* Female anterior */}
-          <g transform="translate(4, 486)">
+          {/* Female anterior — 16-unit gap below male row */}
+          <g transform="translate(4, 450)">
             {fig("front", "female", <FemaleFrontFigure />)}
-            <text x="70" y="432" textAnchor="middle" fontSize={6.5} fontWeight="600" fill="#9ca3af" letterSpacing="1.5" style={{ pointerEvents: "none" }}>ANTERIOR</text>
           </g>
 
           {/* Female posterior */}
-          <g transform="translate(156, 486)">
+          <g transform="translate(156, 450)">
             {fig("back", "female", <FemaleBackFigure />)}
-            <text x="70" y="432" textAnchor="middle" fontSize={6.5} fontWeight="600" fill="#9ca3af" letterSpacing="1.5" style={{ pointerEvents: "none" }}>POSTERIOR</text>
           </g>
         </svg>
       </div>
