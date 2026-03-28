@@ -11,18 +11,16 @@ export default function PainMapPage() {
   return (
     <div className="flex flex-1 flex-col bg-slate-50">
       {/* ── Page header ───────────────────────────────────────────────── */}
-      <div className="border-b border-teal-900/20 bg-gradient-to-b from-teal-950 to-teal-900 px-6 py-12 text-center">
+      <div className="border-b border-teal-900/20 bg-gradient-to-b from-teal-950 to-teal-900 px-6 py-5 text-center">
         <div className="mx-auto max-w-2xl">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-teal-300">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-teal-300">
             Boulder Pain Relief
           </p>
-          <h1 className="mb-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+          <h1 className="mb-1.5 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
             PainMap
           </h1>
-          <p className="text-base text-teal-100/75">
-            Mark where it hurts, describe what&apos;s going on, and get a
-            plain-language explanation of what may be happening in your body —
-            plus specific self-care steps you can use today.
+          <p className="text-sm text-teal-100/70">
+            Mark where it hurts and get a plain-language soft-tissue assessment.
           </p>
         </div>
       </div>

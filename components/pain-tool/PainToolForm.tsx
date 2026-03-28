@@ -430,15 +430,12 @@ export default function PainToolForm() {
         />
       )}
 
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 sm:py-12 lg:grid-cols-[1fr_1.2fr] lg:items-start lg:gap-10">
+      <div className="mx-auto grid max-w-6xl gap-4 px-4 py-4 sm:px-6 sm:py-6 lg:grid-cols-[1fr_1.2fr] lg:items-start lg:gap-8">
         {/* ── Form panel ──────────────────────────────────────────────────── */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-7">
-          <h2 className="mb-1 text-lg font-semibold text-slate-900">
-            Describe your pain
+        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-5">
+          <h2 className="mb-3 text-lg font-semibold text-slate-900">
+            Map Your Pain
           </h2>
-          <p className="mb-6 text-sm leading-relaxed text-slate-500">
-            Tap regions on the body map to mark where it hurts. A question will appear for each spot you mark.
-          </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             {/* ── Step 1: Body map ────────────────────────────────────── */}
@@ -625,16 +622,18 @@ export default function PainToolForm() {
                   Analyzing…
                 </>
               ) : (
-                "Get My Assessment"
+                "Submit"
               )}
             </button>
           </form>
         </div>
 
-        {/* ── Response panel ───────────────────────────────────────────── */}
+        {/* ── Response panel — hidden on mobile until spots placed ────────── */}
         <div
           ref={responsePanelRef}
-          className="flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm scroll-mt-4"
+          className={`flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm scroll-mt-4 ${
+            painSpots.length === 0 && !aiResponse && !loading && !error ? "hidden lg:flex" : "flex"
+          }`}
         >
           {/* Panel header */}
           <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4 sm:px-7">
@@ -948,7 +947,8 @@ export default function PainToolForm() {
           <div className="h-5 w-px shrink-0" style={{ background: "rgba(255,255,255,0.12)" }} />
 
           {/* Intensity dots — always full color */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-1.5">
             {[1, 2, 3, 4, 5].map((n) => {
               const color = INTENSITY_COLORS[n - 1];
               const selected = n === currentIntensity;
@@ -973,6 +973,11 @@ export default function PainToolForm() {
                 </button>
               );
             })}
+            </div>
+            <div className="flex justify-between px-0.5">
+              <span className="text-[9px] leading-none" style={{ color: "rgba(255,255,255,0.35)" }}>Mild</span>
+              <span className="text-[9px] leading-none" style={{ color: "rgba(255,255,255,0.35)" }}>Severe</span>
+            </div>
           </div>
 
           {/* Dismiss */}
