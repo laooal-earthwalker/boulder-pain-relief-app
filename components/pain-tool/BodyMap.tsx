@@ -313,7 +313,7 @@ export default function BodyMap({ painSpots, onToggle, currentSize, intensity }:
       {/* 2×2 body map */}
       <div className="w-full">
         <svg
-          viewBox="0 0 300 884"
+          viewBox="0 0 300 872"
           className="w-full"
           style={{ touchAction: "manipulation" }}
           role="img"
@@ -322,7 +322,7 @@ export default function BodyMap({ painSpots, onToggle, currentSize, intensity }:
           <SharedDefs />
 
           {/* Vertical centre divider only — no row labels */}
-          <line x1="150" y1="4" x2="150" y2="880" stroke="#e5e7eb" strokeWidth={1} strokeDasharray="4,5" />
+          <line x1="150" y1="4" x2="150" y2="868" stroke="#e5e7eb" strokeWidth={1} strokeDasharray="4,5" />
 
           {/* Male anterior */}
           <g transform="translate(4, 4)">
@@ -334,13 +334,13 @@ export default function BodyMap({ painSpots, onToggle, currentSize, intensity }:
             {fig("back", "male", <MaleBackFigure />)}
           </g>
 
-          {/* Female anterior — 16-unit gap below male row */}
-          <g transform="translate(4, 450)">
+          {/* Female anterior — 4-unit gap below male row */}
+          <g transform="translate(4, 438)">
             {fig("front", "female", <FemaleFrontFigure />)}
           </g>
 
           {/* Female posterior */}
-          <g transform="translate(156, 450)">
+          <g transform="translate(156, 438)">
             {fig("back", "female", <FemaleBackFigure />)}
           </g>
         </svg>

@@ -28,7 +28,7 @@ function FigureImage({ xOffset }: { xOffset: number }) {
       width={FIGURE_LOCAL_W}
       height={FIGURE_LOCAL_H}
       viewBox={`${xOffset} ${FIGURE_Y_CROP} ${SLICE_W} ${IMG_H - FIGURE_Y_CROP}`}
-      preserveAspectRatio="xMidYMin meet"
+      preserveAspectRatio="xMidYMin slice"
       overflow="hidden"
     >
       <image
