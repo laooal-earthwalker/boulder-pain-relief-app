@@ -303,7 +303,6 @@ export default function PainToolForm() {
     setError(null);
     setAiResponse(null);
     setDone(false);
-    setSavedId(null);
     setLoading(true);
 
     const spots = painSpots.map((s) => ({
