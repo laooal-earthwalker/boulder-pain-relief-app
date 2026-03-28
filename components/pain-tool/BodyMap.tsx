@@ -73,9 +73,14 @@ function getLocalPt(e: React.MouseEvent<SVGGElement>): { x: number; y: number } 
 
 // ── Landmark data ─────────────────────────────────────────────────────────────
 
-// Landmark x-coords use ANATOMICAL left/right:
+// FRONT figure (person faces viewer — mirror image):
 //   figure's RIGHT arm = screen LEFT (small x) — e.g. r-shoulder x=24
 //   figure's LEFT arm  = screen RIGHT (large x) — e.g. l-shoulder x=116
+//
+// BACK figure (person faces away — natural back view):
+//   figure's RIGHT arm = screen RIGHT (large x) — e.g. r-shoulder x=122
+//   figure's LEFT arm  = screen LEFT  (small x) — e.g. l-shoulder x=18
+//
 // y-coords scaled from 430→290 coordinate space (× 0.6744)
 const FRONT_LANDMARKS: Landmark[] = [
   { id: "head",         label: "Head",                  x: 70,  y: 13  },
@@ -123,53 +128,53 @@ const FRONT_LANDMARKS: Landmark[] = [
 const BACK_LANDMARKS: Landmark[] = [
   { id: "head",         label: "Back of Head",          x: 70,  y: 13  },
   { id: "cerv-spine",   label: "Back of Neck",          x: 70,  y: 39  },
-  { id: "r-upper-trap", label: "Right Neck / Trap",     x: 46,  y: 51  },
-  { id: "l-upper-trap", label: "Left Neck / Trap",      x: 94,  y: 51  },
-  { id: "r-shoulder",   label: "Right Shoulder",        x: 18,  y: 62  },
-  { id: "l-shoulder",   label: "Left Shoulder",         x: 122, y: 62  },
-  { id: "r-scapula",    label: "Right Shoulder Blade",  x: 48,  y: 77  },
-  { id: "l-scapula",    label: "Left Shoulder Blade",   x: 92,  y: 77  },
+  { id: "r-upper-trap", label: "Right Neck / Trap",     x: 94,  y: 51  },
+  { id: "l-upper-trap", label: "Left Neck / Trap",      x: 46,  y: 51  },
+  { id: "r-shoulder",   label: "Right Shoulder",        x: 122, y: 62  },
+  { id: "l-shoulder",   label: "Left Shoulder",         x: 18,  y: 62  },
+  { id: "r-scapula",    label: "Right Shoulder Blade",  x: 92,  y: 77  },
+  { id: "l-scapula",    label: "Left Shoulder Blade",   x: 48,  y: 77  },
   { id: "upper-back",   label: "Upper Back",            x: 70,  y: 73  },
-  { id: "r-upper-arm",  label: "Right Upper Arm",       x: 14,  y: 94  },
-  { id: "l-upper-arm",  label: "Left Upper Arm",        x: 126, y: 94  },
-  { id: "r-elbow",      label: "Right Elbow",           x: 14,  y: 117 },
-  { id: "l-elbow",      label: "Left Elbow",            x: 126, y: 117 },
+  { id: "r-upper-arm",  label: "Right Upper Arm",       x: 126, y: 94  },
+  { id: "l-upper-arm",  label: "Left Upper Arm",        x: 14,  y: 94  },
+  { id: "r-elbow",      label: "Right Elbow",           x: 126, y: 117 },
+  { id: "l-elbow",      label: "Left Elbow",            x: 14,  y: 117 },
   { id: "mid-back",     label: "Mid Back",              x: 70,  y: 93  },
-  { id: "r-lat",        label: "Right Side (Ribs)",     x: 48,  y: 102 },
-  { id: "l-lat",        label: "Left Side (Ribs)",      x: 92,  y: 102 },
+  { id: "r-lat",        label: "Right Side (Ribs)",     x: 92,  y: 102 },
+  { id: "l-lat",        label: "Left Side (Ribs)",      x: 48,  y: 102 },
   { id: "lower-back",   label: "Lower Back",            x: 70,  y: 116 },
-  { id: "r-low-back",   label: "Right Lower Back",      x: 50,  y: 116 },
-  { id: "l-low-back",   label: "Left Lower Back",       x: 90,  y: 116 },
-  { id: "r-forearm",    label: "Right Forearm",         x: 18,  y: 137 },
-  { id: "l-forearm",    label: "Left Forearm",          x: 122, y: 137 },
-  { id: "r-wrist",      label: "Right Wrist",           x: 20,  y: 154 },
-  { id: "l-wrist",      label: "Left Wrist",            x: 120, y: 154 },
-  { id: "r-hand",       label: "Right Hand",            x: 24,  y: 169 },
-  { id: "l-hand",       label: "Left Hand",             x: 116, y: 169 },
+  { id: "r-low-back",   label: "Right Lower Back",      x: 90,  y: 116 },
+  { id: "l-low-back",   label: "Left Lower Back",       x: 50,  y: 116 },
+  { id: "r-forearm",    label: "Right Forearm",         x: 122, y: 137 },
+  { id: "l-forearm",    label: "Left Forearm",          x: 18,  y: 137 },
+  { id: "r-wrist",      label: "Right Wrist",           x: 120, y: 154 },
+  { id: "l-wrist",      label: "Left Wrist",            x: 20,  y: 154 },
+  { id: "r-hand",       label: "Right Hand",            x: 116, y: 169 },
+  { id: "l-hand",       label: "Left Hand",             x: 24,  y: 169 },
   { id: "sacrum",       label: "Tailbone Area",         x: 70,  y: 147 },
-  { id: "r-glute",      label: "Right Buttock",         x: 46,  y: 164 },
-  { id: "l-glute",      label: "Left Buttock",          x: 94,  y: 164 },
-  { id: "r-out-thigh",  label: "Right Outer Thigh",     x: 40,  y: 189 },
-  { id: "l-out-thigh",  label: "Left Outer Thigh",      x: 100, y: 189 },
-  { id: "r-hamstring",  label: "Right Hamstring",       x: 52,  y: 204 },
-  { id: "l-hamstring",  label: "Left Hamstring",        x: 88,  y: 204 },
-  { id: "r-popliteal",  label: "Back of Right Knee",    x: 52,  y: 236 },
-  { id: "l-popliteal",  label: "Back of Left Knee",     x: 88,  y: 236 },
-  { id: "r-calf",       label: "Right Calf",            x: 52,  y: 252 },
-  { id: "l-calf",       label: "Left Calf",             x: 88,  y: 252 },
-  { id: "r-achilles",   label: "Right Achilles",        x: 54,  y: 270 },
-  { id: "l-achilles",   label: "Left Achilles",         x: 86,  y: 270 },
-  { id: "r-heel",       label: "Right Heel",            x: 64,  y: 278 },
-  { id: "l-heel",       label: "Left Heel",             x: 76,  y: 278 },
+  { id: "r-glute",      label: "Right Buttock",         x: 94,  y: 164 },
+  { id: "l-glute",      label: "Left Buttock",          x: 46,  y: 164 },
+  { id: "r-out-thigh",  label: "Right Outer Thigh",     x: 100, y: 189 },
+  { id: "l-out-thigh",  label: "Left Outer Thigh",      x: 40,  y: 189 },
+  { id: "r-hamstring",  label: "Right Hamstring",       x: 88,  y: 204 },
+  { id: "l-hamstring",  label: "Left Hamstring",        x: 52,  y: 204 },
+  { id: "r-popliteal",  label: "Back of Right Knee",    x: 88,  y: 236 },
+  { id: "l-popliteal",  label: "Back of Left Knee",     x: 52,  y: 236 },
+  { id: "r-calf",       label: "Right Calf",            x: 88,  y: 252 },
+  { id: "l-calf",       label: "Left Calf",             x: 52,  y: 252 },
+  { id: "r-achilles",   label: "Right Achilles",        x: 86,  y: 270 },
+  { id: "l-achilles",   label: "Left Achilles",         x: 54,  y: 270 },
+  { id: "r-heel",       label: "Right Heel",            x: 76,  y: 278 },
+  { id: "l-heel",       label: "Left Heel",             x: 64,  y: 278 },
 ];
 
 // ── Compensation chain: posterior source → anterior target ────────────────────
 // Maps a spot's label to the suggested compensation origin (label + view to
 // display the glow on). Used only as a visual suggestion — not a diagnosis.
-// Target labels use the OPPOSITE anatomical label so the indicator lands on the
-// same VISUAL side as the source spot. The front figure is on the left half of
-// the SVG and the back figure is on the right half, so a "Right" back spot
-// (global screen-right) must chain to the "Left" front landmark (also screen-right).
+// Back figure (right half of SVG): "Right" = large local x = global screen-right.
+// Front figure (left half of SVG): "Left"  = large local x = global center-right.
+// Using opposite anatomical label for targets keeps the indicator on the same
+// visual side of the screen as its source spot.
 const COMP_CHAIN_MAP: Record<string, { label: string; view: "front" | "back" }> = {
   "Right Neck / Trap":  { label: "Front of Neck",    view: "front" },
   "Left Neck / Trap":   { label: "Front of Neck",    view: "front" },
