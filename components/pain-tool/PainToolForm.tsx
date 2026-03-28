@@ -184,6 +184,8 @@ function ActivityModal({
   );
 }
 
+const INTENSITY_COLORS = ["#FCD34D", "#F59E0B", "#F97316", "#EF4444", "#DC2626"];
+
 // ── Main form component ────────────────────────────────────────────────────────
 
 export default function PainToolForm() {
@@ -219,7 +221,7 @@ export default function PainToolForm() {
   const responsePanelRef = useRef<HTMLDivElement>(null);
 
   // Sticky floating controls
-  const controlsRef = useRef<HTMLDivElement>(null);
+  const bodyMapRef = useRef<HTMLDivElement>(null);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [stickyDismissed, setStickyDismissed] = useState(false);
 
@@ -244,20 +246,16 @@ export default function PainToolForm() {
     setClientToken(token);
   }, []);
 
-  // Show sticky bar when controls panel scrolls out of view
+  // Show bar only while body map figures are on screen
   useEffect(() => {
-    const el = controlsRef.current;
+    const el = bodyMapRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setShowStickyBar(false);
-          setStickyDismissed(false);
-        } else {
-          setShowStickyBar(true);
-        }
+        setShowStickyBar(entry.isIntersecting);
+        if (!entry.isIntersecting) setStickyDismissed(false);
       },
-      { threshold: 0, rootMargin: "0px 0px -60px 0px" }
+      { threshold: 0 }
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -454,83 +452,8 @@ export default function PainToolForm() {
                 </span>
               </div>
 
-              {/* Size + intensity selector */}
-              <div ref={controlsRef} className="rounded-xl border border-slate-200 bg-white p-3">
-                <p className="mb-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Pain spread &amp; intensity — select before tapping the map
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  {(
-                    [
-                      { size: "pinpoint" as SpotSize, label: "Pinpoint", desc: "Sharp, localized", r: 4 },
-                      { size: "regional" as SpotSize, label: "Regional", desc: "Moderate spread",  r: 7 },
-                      { size: "diffuse"  as SpotSize, label: "Diffuse",  desc: "Broad aching area", r: 10 },
-                    ] as { size: SpotSize; label: string; desc: string; r: number }[]
-                  ).map(({ size, label, desc, r }) => {
-                    const active = currentSize === size;
-                    const color = spotColor(currentIntensity);
-                    return (
-                      <button
-                        key={size}
-                        type="button"
-                        onClick={() => setCurrentSize(size)}
-                        className={`flex flex-col items-center gap-1.5 rounded-xl border py-3 px-2 text-center transition ${
-                          active
-                            ? "border-teal-400 bg-teal-50 ring-1 ring-teal-400/40"
-                            : "border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white"
-                        }`}
-                      >
-                        <svg
-                          width={r * 2 + 4}
-                          height={r * 2 + 4}
-                          viewBox={`0 0 ${r * 2 + 4} ${r * 2 + 4}`}
-                          aria-hidden
-                          className="mt-0.5"
-                        >
-                          {size === "diffuse" && (
-                            <circle cx={r + 2} cy={r + 2} r={r + 2} fill={active ? color : "#94a3b8"} opacity={0.18} />
-                          )}
-                          <circle cx={r + 2} cy={r + 2} r={r} fill={active ? color : "#94a3b8"} opacity={size === "diffuse" ? 0.65 : 0.88} />
-                        </svg>
-                        <span className={`text-xs font-semibold leading-none ${active ? "text-teal-700" : "text-slate-600"}`}>
-                          {label}
-                        </span>
-                        <span className="text-[10px] leading-tight text-slate-400">{desc}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Intensity dots — 1 to 5 */}
-                <div className="mt-3 flex items-center justify-between gap-1">
-                  <span className="shrink-0 text-[10px] text-slate-400">Intensity</span>
-                  <div className="flex items-center gap-1.5">
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => setCurrentIntensity(n)}
-                        title={["Barely noticeable", "Mild", "Moderate", "Significant", "Severe"][n - 1]}
-                        className="flex h-6 w-6 items-center justify-center rounded-full transition focus:outline-none"
-                        style={{
-                          backgroundColor: n <= currentIntensity ? spotColor(n) : "#e2e8f0",
-                          transform: n === currentIntensity ? "scale(1.25)" : "scale(1)",
-                          boxShadow: n === currentIntensity ? `0 0 0 2px white, 0 0 0 3.5px ${spotColor(n)}` : "none",
-                        }}
-                        aria-pressed={n === currentIntensity}
-                      >
-                        <span className="sr-only">{n}</span>
-                      </button>
-                    ))}
-                  </div>
-                  <span className="shrink-0 text-[10px] font-semibold" style={{ color: spotColor(currentIntensity) }}>
-                    {["Barely noticeable", "Mild", "Moderate", "Significant", "Severe"][currentIntensity - 1]}
-                  </span>
-                </div>
-              </div>
-
-              {/* Body map */}
-              <div className="rounded-xl border border-slate-100 bg-slate-50 px-2 py-4 sm:px-4">
+              {/* Body map — ref used to control floating bar visibility */}
+              <div ref={bodyMapRef} className="rounded-xl border border-slate-100 bg-slate-50 px-2 py-4 sm:px-4">
                 <BodyMap
                   painSpots={painSpots}
                   onToggle={handleToggle}
@@ -1024,24 +947,32 @@ export default function PainToolForm() {
           {/* Divider */}
           <div className="h-5 w-px shrink-0" style={{ background: "rgba(255,255,255,0.12)" }} />
 
-          {/* Intensity dots */}
+          {/* Intensity dots — always full color */}
           <div className="flex items-center gap-1.5">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setCurrentIntensity(n)}
-                className="h-5 w-5 rounded-full transition focus:outline-none"
-                aria-pressed={n === currentIntensity}
-                style={{
-                  backgroundColor: n <= currentIntensity ? spotColor(n) : "rgba(255,255,255,0.15)",
-                  transform: n === currentIntensity ? "scale(1.3)" : "scale(1)",
-                  boxShadow: n === currentIntensity ? `0 0 0 2px #1a1a2e, 0 0 0 3.5px ${spotColor(n)}` : "none",
-                }}
-              >
-                <span className="sr-only">{n}</span>
-              </button>
-            ))}
+            {[1, 2, 3, 4, 5].map((n) => {
+              const color = INTENSITY_COLORS[n - 1];
+              const selected = n === currentIntensity;
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setCurrentIntensity(n)}
+                  title={["Barely noticeable", "Mild", "Moderate", "Significant", "Severe"][n - 1]}
+                  className="h-5 w-5 rounded-full focus:outline-none"
+                  aria-pressed={selected}
+                  style={{
+                    backgroundColor: color,
+                    opacity: selected ? 1 : 0.6,
+                    transform: selected ? "scale(1.4)" : "scale(0.9)",
+                    transition: "transform 0.15s, opacity 0.15s",
+                    ["--dot-color" as string]: color,
+                    animation: selected ? "intensity-ring-pulse 1.4s ease-in-out infinite" : "none",
+                  } as React.CSSProperties}
+                >
+                  <span className="sr-only">{n}</span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Dismiss */}
