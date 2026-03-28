@@ -166,17 +166,21 @@ const BACK_LANDMARKS: Landmark[] = [
 // ── Compensation chain: posterior source → anterior target ────────────────────
 // Maps a spot's label to the suggested compensation origin (label + view to
 // display the glow on). Used only as a visual suggestion — not a diagnosis.
+// Target labels use the OPPOSITE anatomical label so the indicator lands on the
+// same VISUAL side as the source spot. The front figure is on the left half of
+// the SVG and the back figure is on the right half, so a "Right" back spot
+// (global screen-right) must chain to the "Left" front landmark (also screen-right).
 const COMP_CHAIN_MAP: Record<string, { label: string; view: "front" | "back" }> = {
-  "Right Neck / Trap":  { label: "Front of Neck",     view: "front" },
-  "Left Neck / Trap":   { label: "Front of Neck",     view: "front" },
-  "Back of Neck":       { label: "Front of Neck",     view: "front" },
-  "Upper Back":         { label: "Chest (Center)",    view: "front" },
-  "Mid Back":           { label: "Chest (Center)",    view: "front" },
-  "Lower Back":         { label: "Lower Abdomen",     view: "front" },
-  "Right Lower Back":   { label: "Right Hip",         view: "front" },
-  "Left Lower Back":    { label: "Left Hip",          view: "front" },
-  "Right Buttock":      { label: "Right Outer Thigh", view: "front" },
-  "Left Buttock":       { label: "Left Outer Thigh",  view: "front" },
+  "Right Neck / Trap":  { label: "Front of Neck",    view: "front" },
+  "Left Neck / Trap":   { label: "Front of Neck",    view: "front" },
+  "Back of Neck":       { label: "Front of Neck",    view: "front" },
+  "Upper Back":         { label: "Chest (Center)",   view: "front" },
+  "Mid Back":           { label: "Chest (Center)",   view: "front" },
+  "Lower Back":         { label: "Lower Abdomen",    view: "front" },
+  "Right Lower Back":   { label: "Left Hip",         view: "front" },  // screen-right → screen-right front
+  "Left Lower Back":    { label: "Right Hip",        view: "front" },  // screen-left  → screen-left  front
+  "Right Buttock":      { label: "Left Outer Thigh", view: "front" },  // screen-right → screen-right front
+  "Left Buttock":       { label: "Right Outer Thigh",view: "front" },  // screen-left  → screen-left  front
 };
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -220,13 +224,18 @@ const BodyMap = memo(function BodyMap({ painSpots, onToggle, currentSize, intens
   function renderCompChainIndicators(view: "front" | "back", sex: "male" | "female") {
     if (sex !== selectedSex) return null;
     const targetLandmarks = view === "front" ? FRONT_LANDMARKS : BACK_LANDMARKS;
-    return painSpots.flatMap((spot, i) => {
+    // Deduplicate: only one indicator per unique target landmark (multiple source
+    // spots can share the same target, e.g. Upper Back + Mid Back → Chest Center).
+    const rendered = new Set<string>();
+    return painSpots.flatMap((spot) => {
       const target = COMP_CHAIN_MAP[spot.label];
       if (!target || target.view !== view) return [];
+      if (rendered.has(target.label)) return [];
       const lm = targetLandmarks.find((l) => l.label === target.label);
       if (!lm) return [];
+      rendered.add(target.label);
       return [(
-        <g key={`chain-${i}`} style={{ pointerEvents: "none" }}>
+        <g key={`chain-${target.label}`} style={{ pointerEvents: "none" }}>
           <ellipse
             cx={lm.x}
             cy={lm.y}
