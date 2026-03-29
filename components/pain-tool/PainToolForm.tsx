@@ -341,9 +341,9 @@ export default function PainToolForm() {
       setAiResponse(data);
       setDone(true);
 
-      // Auto-save session to localStorage longitudinal store
+      // Auto-save session (Supabase → localStorage fallback)
       try {
-        const saved = addSession({
+        const saved = await addSession({
           clientToken: clientToken ?? "",
           timestamp: new Date().toISOString(),
           spots: painSpots,
@@ -352,7 +352,7 @@ export default function PainToolForm() {
           betterWith: form.betterWith || undefined,
           figure: "male",
         });
-        const allSessions = getSessions();
+        const allSessions = await getSessions();
         setSessionComparison(buildComparison(saved, allSessions));
         setSessionInsights(computeInsights(allSessions));
       } catch {

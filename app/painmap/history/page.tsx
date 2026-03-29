@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import MiniBodyMap from "@/components/pain-tool/MiniBodyMap";
 import ConnectedTimeline from "@/components/pain-tool/ConnectedTimeline";
+import { getSessions } from "@/lib/painmap-client";
 import type { PainMapSession } from "@/types/painmap";
 
 function spotColor(intensity: number): string {
@@ -33,17 +34,15 @@ export default function PainMapHistoryPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("painmap-sessions");
-      const all: PainMapSession[] = raw ? JSON.parse(raw) : [];
-      const sorted = [...all].sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-      setSessions(sorted);
-    } catch {
-      // ignore parse errors
-    }
-    setLoading(false);
+    getSessions()
+      .then((all) => {
+        const sorted = [...all].sort(
+          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+        setSessions(sorted);
+      })
+      .catch(() => {/* non-fatal */})
+      .finally(() => setLoading(false));
   }, []);
 
   return (
