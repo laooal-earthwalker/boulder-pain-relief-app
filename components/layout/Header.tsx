@@ -35,7 +35,7 @@ export default function Header() {
 
     async function fetchRole(userId: string) {
       const { data } = await supabase
-        .from("client_profiles")
+        .from("profiles")
         .select("role")
         .eq("id", userId)
         .single();
