@@ -12,8 +12,8 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
 
   const { data: profile } = await supabase
-    .from("client_profiles")
-    .select("full_name, email")
+    .from("profiles")
+    .select("full_name")
     .eq("id", user!.id)
     .single();
 
@@ -32,7 +32,7 @@ export default async function DashboardPage() {
     (submitted ?? []).map((s) => [s.report_id, s.status as string])
   );
 
-  const name = profile?.full_name ?? profile?.email ?? "Your";
+  const name = profile?.full_name ?? user!.email ?? "Your account";
 
   return (
     <div className="flex flex-1 flex-col bg-slate-50">
