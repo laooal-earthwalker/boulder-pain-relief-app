@@ -32,7 +32,12 @@ export default async function DashboardPage() {
     (submitted ?? []).map((s) => [s.report_id, s.status as string])
   );
 
-  const name = profile?.full_name ?? user!.email ?? "Your account";
+  // Prefer profiles.full_name, then auth metadata (set at signup), then email
+  const name =
+    profile?.full_name ??
+    (user!.user_metadata?.full_name as string | undefined) ??
+    user!.email ??
+    "Your account";
 
   return (
     <div className="flex flex-1 flex-col bg-slate-50">
