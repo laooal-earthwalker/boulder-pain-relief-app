@@ -221,6 +221,34 @@ export async function addSession(
   return session;
 }
 
+/**
+ * Claims anonymous sessions on the current device by linking them to the
+ * authenticated user. Call this immediately after sign-in or sign-up confirmation.
+ *
+ * Finds all pain_sessions rows where client_token matches this device's stored
+ * token AND client_id IS NULL, then sets client_id to the user's uid.
+ */
+export async function claimAnonymousSessions(): Promise<void> {
+  if (typeof window === "undefined") return;
+
+  const token = localStorage.getItem("painmap_token");
+  if (!token) return;
+
+  const supabase = getSupabase();
+  const userId = await getAuthUserId();
+  if (!userId) return;
+
+  const { error } = await supabase
+    .from("pain_sessions")
+    .update({ client_id: userId, client_token: null })
+    .eq("client_token", token)
+    .is("client_id", null);
+
+  if (error) {
+    console.warn("[painmap] Failed to claim anonymous sessions:", error.message);
+  }
+}
+
 export {
   buildComparison,
   computeInsights,

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { claimAnonymousSessions } from "@/lib/painmap-client";
 
 const navLinks = [
   { href: "/about", label: "About" },
@@ -49,10 +50,11 @@ export default function Header() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) fetchRole(session.user.id);
       else setRole(null);
+      if (event === "SIGNED_IN") claimAnonymousSessions();
     });
 
     return () => subscription.unsubscribe();

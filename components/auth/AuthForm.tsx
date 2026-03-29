@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { claimAnonymousSessions } from "@/lib/painmap-client";
 
 interface Props {
   mode: "login" | "signup";
@@ -50,6 +51,7 @@ export default function AuthForm({ mode }: Props) {
       if (error) {
         setError(error.message);
       } else {
+        await claimAnonymousSessions();
         router.push(redirect);
         router.refresh();
       }
